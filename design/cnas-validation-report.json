@@ -1,0 +1,393 @@
+{
+  "cli": "@pen.dev/cli@0.3.0",
+  "results": [
+    {
+      "design": "cnas-01-workbench",
+      "pages": 9,
+      "desktopPages": 7,
+      "mobilePages": 2,
+      "reusableComponents": 15,
+      "componentInstances": 73,
+      "instantiatedComponentTypes": 10,
+      "missingInstantiatedComponents": [
+        "Button/Danger",
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 6,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 3384
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 3384
+      },
+      "artifactHashes": {
+        "sourceSha256": "484b547c9ace90350d6c0efc210b9884b4f029f7942505a4f01d92d8260cdb3b",
+        "previewSha256": "8bb4a3960a59c5f4e6fee792f3ca6797c1a951c5d09b691752b967d561a22642"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-02-customer-commission",
+      "pages": 9,
+      "desktopPages": 9,
+      "mobilePages": 0,
+      "reusableComponents": 15,
+      "componentInstances": 66,
+      "instantiatedComponentTypes": 7,
+      "missingInstantiatedComponents": [
+        "Button/Danger",
+        "Tag/Danger",
+        "Tag/Info",
+        "Alert/Warning",
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 9,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 3440
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 3440
+      },
+      "artifactHashes": {
+        "sourceSha256": "c61ed83c9f495847810f57c0473a30adff25e953fd8f9f3d66954877de991cd1",
+        "previewSha256": "470b3cba9e6a4b12c535aced105017ce1d394ba80885710817799b42fd8074d1"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-03-sample-management",
+      "pages": 13,
+      "desktopPages": 12,
+      "mobilePages": 1,
+      "reusableComponents": 15,
+      "componentInstances": 106,
+      "instantiatedComponentTypes": 10,
+      "missingInstantiatedComponents": [
+        "Tag/Info",
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 1,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 4404
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 4404
+      },
+      "artifactHashes": {
+        "sourceSha256": "a43e7fbeed8551965dce9685876588d7796e6d7699f4058f76db400c67464102",
+        "previewSha256": "46d98adce02955193ec075b049158917b959d5b95a4b2d30d12bc43c6cbed393"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-04-testing-management",
+      "pages": 15,
+      "desktopPages": 14,
+      "mobilePages": 1,
+      "reusableComponents": 15,
+      "componentInstances": 117,
+      "instantiatedComponentTypes": 11,
+      "missingInstantiatedComponents": [
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 3,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 5424
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 5424
+      },
+      "artifactHashes": {
+        "sourceSha256": "d50eb6526465044382b20fd348ca868a2495170c9f436efe5a81b2f0161bec15",
+        "previewSha256": "1a9984b6701078a4f8b8e87e8dd4c9dd0f7cb7dd45502cbb5944909deefe4219"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-05-report-management",
+      "pages": 12,
+      "desktopPages": 11,
+      "mobilePages": 1,
+      "reusableComponents": 15,
+      "componentInstances": 59,
+      "instantiatedComponentTypes": 9,
+      "missingInstantiatedComponents": [
+        "Tag/Success",
+        "Tag/Warning",
+        "Tag/Danger",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 11,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 4404
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 4404
+      },
+      "artifactHashes": {
+        "sourceSha256": "5f6eacd75841246f258c471248f3f53dcb095bac8e48f85b0cec49c90febf39e",
+        "previewSha256": "d7cdb21580d3f6a27f25b7075f8e9747debb934e5af683d522bdadd4f68178a6"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-06-resource-management",
+      "pages": 27,
+      "desktopPages": 26,
+      "mobilePages": 1,
+      "reusableComponents": 15,
+      "componentInstances": 216,
+      "instantiatedComponentTypes": 13,
+      "missingInstantiatedComponents": [
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 4,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 8484
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 8484
+      },
+      "artifactHashes": {
+        "sourceSha256": "9ce8e07b1b78ca7174e57a2135f723c67aad145a07dbbaa31de12caf7dc7eb94",
+        "previewSha256": "d065476bf817c3128b65eee78e0635316a470463183179d3c95cc5c2b48f11b2"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-07-quality-management",
+      "pages": 12,
+      "desktopPages": 12,
+      "mobilePages": 0,
+      "reusableComponents": 15,
+      "componentInstances": 81,
+      "instantiatedComponentTypes": 11,
+      "missingInstantiatedComponents": [
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 3,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 3440
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 3440
+      },
+      "artifactHashes": {
+        "sourceSha256": "fb0f577efda66a02648e6525592480fc6877bc39a517cc6dabde31b80a3b218d",
+        "previewSha256": "9b0bad3fb79607c78dbd3d87d9f7bbbeb7f4a8d797044814544dc8dba41a0fc4"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-08-governance-management",
+      "pages": 15,
+      "desktopPages": 15,
+      "mobilePages": 0,
+      "reusableComponents": 15,
+      "componentInstances": 106,
+      "instantiatedComponentTypes": 11,
+      "missingInstantiatedComponents": [
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 4,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 4460
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 4460
+      },
+      "artifactHashes": {
+        "sourceSha256": "7396391ba3161462b9964f76e85354da9c50c7d46a9d2725629d2a8c70df1b5c",
+        "previewSha256": "3fba84ef888d100803930dc9ad41b83b26de7914d0ee81d9196973017ae9ed7f"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-09-accreditation-management",
+      "pages": 8,
+      "desktopPages": 8,
+      "mobilePages": 0,
+      "reusableComponents": 15,
+      "componentInstances": 67,
+      "instantiatedComponentTypes": 11,
+      "missingInstantiatedComponents": [
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 1,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 2420
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 2420
+      },
+      "artifactHashes": {
+        "sourceSha256": "ffa1c77cf921f3680033060918b28ea54250c2f1a98e5d2f1802db26647db46f",
+        "previewSha256": "9b99746b1d0d02405a95786efe8d71cf9eb4238a887e60845ade7ce477facb47"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-10-system-management",
+      "pages": 16,
+      "desktopPages": 16,
+      "mobilePages": 0,
+      "reusableComponents": 15,
+      "componentInstances": 111,
+      "instantiatedComponentTypes": 10,
+      "missingInstantiatedComponents": [
+        "Button/Danger",
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off"
+      ],
+      "semanticMarkers": 4,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 6120,
+        "height": 4460
+      },
+      "expectedPreviewSize": {
+        "width": 6120,
+        "height": 4460
+      },
+      "artifactHashes": {
+        "sourceSha256": "4d3e5741a3fdf6af3cee90e61c9e9d0ff127f47b6233bcf409b2ac7d3c9fd823",
+        "previewSha256": "cc593f8e33df75267d438fe0a1ae41826fdedf67ec0b670e5efd6adb7ba90173"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-design-system",
+      "pages": 0,
+      "sections": 6,
+      "reusableComponents": 15,
+      "semanticMarkers": 19,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "previewSize": {
+        "width": 3000,
+        "height": 2380
+      },
+      "expectedSheetSize": {
+        "width": 3000,
+        "height": 2380
+      },
+      "artifactHashes": {
+        "sourceSha256": "be28e95b20305f321a814b6af482499de8d2fc17a792262b8abf98e3e1988569",
+        "previewSha256": "01a80253696481e2231307e172b139ea9c5b7dfbcb0c2ccad5539c11b9ced143"
+      },
+      "status": "passed",
+      "errors": []
+    }
+  ],
+  "summary": {
+    "designs": 11,
+    "businessDesigns": 10,
+    "designSystems": 1,
+    "pages": 136,
+    "passed": 11,
+    "failed": 0
+  }
+}
