@@ -1,0 +1,16 @@
+# Cognis runtime state, caches, backups, and verification artifacts
+.cognis/
+.agents/backup/
+.agents/memory/
+.agents/cognis/tools/
+.agents/cognis/tools/**/node_modules/
+
+# Local Python and tooling caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local editor and operating-system files
+.DS_Store
+Thumbs.db
+~$*

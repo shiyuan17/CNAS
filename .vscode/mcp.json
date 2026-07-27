@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "drawio-mcp": {
+      "type": "stdio",
+      "command": "pnpm",
+      "args": ["dlx", "@drawio/mcp"]
+    }
+  }
+}

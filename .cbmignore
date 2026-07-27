@@ -1,0 +1,17 @@
+# COGNIS:CBM:START
+/.agents/
+/.codex/
+/.cognis/
+/.codebase-memory/
+/node_modules/
+/bin/
+/obj/
+/dist/
+/target/
+/vendor/
+/artifacts/
+/_pkg_review/
+*.log
+*.log.*
+*.zip
+# COGNIS:CBM:END
