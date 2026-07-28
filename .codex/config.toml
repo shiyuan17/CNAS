@@ -21,7 +21,7 @@ args = ["D:\\Github\\JW\\CNAS\\.agents\\cognis\\tools\\codebase-memory-mcp\\run.
 
 [mcp_servers.codebase-memory-mcp.env]
 CBM_ALLOWED_ROOT = "D:\\Github\\JW\\CNAS"
-CBM_CACHE_DIR = "D:\\Github\\JW\\CNAS\\.cognis\\tool-state\\codebase-memory-mcp\\cache"
+CBM_CACHE_DIR = "D:\\Github\\JW\\CNAS\\.cognis\\tool-state\\codebase-memory-mcp\\cache-v2"
 CBM_MEM_BUDGET_MB = "2048"
 CBM_WORKERS = "2"
 # COGNIS:MCP:END
