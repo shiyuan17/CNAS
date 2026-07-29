@@ -8,6 +8,7 @@ import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { useAuthStore } from '#/store';
+import { isDemoMode } from '#/cnas/demo';
 
 defineOptions({ name: 'Login' });
 
@@ -15,21 +16,13 @@ const authStore = useAuthStore();
 
 const MOCK_USER_OPTIONS: BasicOption[] = [
   {
-    label: 'Super',
-    value: 'vben',
-  },
-  {
-    label: 'Admin',
-    value: 'admin',
-  },
-  {
-    label: 'User',
-    value: 'jack',
+    label: 'CNAS 演示管理员',
+    value: 'demo-admin',
   },
 ];
 
 const formSchema = computed((): VbenFormSchema[] => {
-  return [
+  const schemas: VbenFormSchema[] = [
     {
       component: 'VbenSelect',
       componentProps: {
@@ -42,7 +35,7 @@ const formSchema = computed((): VbenFormSchema[] => {
         .string()
         .min(1, { message: $t('authentication.selectAccount') })
         .optional()
-        .default('vben'),
+        .default('demo-admin'),
     },
     {
       component: 'VbenInput',
@@ -57,7 +50,7 @@ const formSchema = computed((): VbenFormSchema[] => {
             );
             if (findUser) {
               form.setValues({
-                password: '123456',
+                password: 'demo',
                 username: findUser.value,
               });
             }
@@ -78,14 +71,19 @@ const formSchema = computed((): VbenFormSchema[] => {
       label: $t('authentication.password'),
       rules: z.string().min(1, { message: $t('authentication.passwordTip') }),
     },
-    {
+  ];
+
+  if (!isDemoMode()) {
+    schemas.push({
       component: markRaw(SliderCaptcha),
       fieldName: 'captcha',
       rules: z.boolean().refine((value) => value, {
         message: $t('authentication.verifyRequiredTip'),
       }),
-    },
-  ];
+    });
+  }
+
+  return schemas;
 });
 </script>
 
@@ -93,6 +91,8 @@ const formSchema = computed((): VbenFormSchema[] => {
   <AuthenticationLogin
     :form-schema="formSchema"
     :loading="authStore.loginLoading"
+    sub-title="ISO/IEC 17025 实验室信息管理系统"
+    title="CNAS 实验室信息管理系统"
     @submit="authStore.authLogin"
   />
 </template>
