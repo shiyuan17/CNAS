@@ -578,15 +578,56 @@ const qualityPages = [
   ),
 ];
 
+// Keep entry ledgers and monitoring views on their existing renderers. Pages that
+// drive a controlled action use a specialised family selected by the generator.
+const renderFamilies = {
+  R02: 'verification',
+  R03: 'workflow',
+  R04: 'workflow',
+  R05: 'approval',
+  R06: 'approval',
+  R08: 'lifecycle',
+  R09: 'verification',
+  R10: 'lifecycle',
+  R12: 'workflow',
+  R13: 'workflow',
+  R14: 'verification',
+  R16: 'workflow',
+  R17: 'workflow',
+  R19: 'verification',
+  R20: 'approval',
+  R21: 'approval',
+  R22: 'workflow',
+  R23: 'workflow',
+  R24: 'verification',
+  R25: 'approval',
+  R26: 'workflow',
+  M06: 'workflow',
+  Q01: 'workflow',
+  Q02: 'verification',
+  Q03: 'verification',
+  Q04: 'workflow',
+  Q05: 'verification',
+  Q07: 'approval',
+  Q08: 'workflow',
+  Q09: 'workflow',
+  Q10: 'approval',
+  Q12: 'approval',
+};
+
+const withRenderFamilies = (pages) => pages.map((item) => (
+  renderFamilies[item.id] ? { ...item, renderFamily: renderFamilies[item.id] } : item
+));
+
 export const resourceDomains = [
   {
     basename: 'cnas-06-resource-management',
     root: '资源管理',
-    pages: resourcePages,
+    pages: withRenderFamilies(resourcePages),
   },
   {
     basename: 'cnas-07-quality-management',
     root: '质量管理',
-    pages: qualityPages,
+    pages: withRenderFamilies(qualityPages),
   },
 ];

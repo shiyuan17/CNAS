@@ -1,8 +1,52 @@
+// Preserve existing list and monitoring renderers. Controlled approvals, evidence
+// checks, releases, and versioned records are selected by the specialised layout.
+const renderFamilies = {
+  GOV02: 'lifecycle',
+  GOV03: 'approval',
+  GOV04: 'workflow',
+  GOV05: 'verification',
+  GOV06: 'lifecycle',
+  GOV07: 'lifecycle',
+  GOV08: 'lifecycle',
+  GOV09: 'approval',
+  GOV10: 'approval',
+  GOV11: 'verification',
+  GOV12: 'workflow',
+  GOV14: 'approval',
+  GOV15: 'workflow',
+  ACC01: 'lifecycle',
+  ACC02: 'verification',
+  ACC03: 'approval',
+  ACC04: 'verification',
+  ACC05: 'verification',
+  ACC06: 'workflow',
+  ACC07: 'workflow',
+  ACC08: 'lifecycle',
+  SYS01: 'workflow',
+  SYS02: 'verification',
+  SYS03: 'verification',
+  SYS04: 'verification',
+  SYS06: 'verification',
+  SYS07: 'workflow',
+  SYS08: 'workflow',
+  SYS09: 'lifecycle',
+  SYS10: 'workflow',
+  SYS11: 'workflow',
+  SYS12: 'approval',
+  SYS13: 'workflow',
+  SYS14: 'lifecycle',
+  SYS16: 'workflow',
+};
+
+const withRenderFamilies = (pages) => pages.map((item) => (
+  renderFamilies[item.id] ? { ...item, renderFamily: renderFamilies[item.id] } : item
+));
+
 export const governanceDomains = [
   {
     basename: 'cnas-08-governance-management',
     root: '体系管理',
-    pages: [
+    pages: withRenderFamilies([
       {
         id: 'GOV01',
         title: '受控文件库',
@@ -213,12 +257,12 @@ export const governanceDomains = [
         flow: '登记事件 → 风险与影响评价 → 原因分析 → 实施措施 → 有效性验证 → 关闭',
         requirement: '支持关联投诉、审核发现、质控异常和评审问题，重复事件触发趋势分析',
       },
-    ],
+    ]),
   },
   {
     basename: 'cnas-09-accreditation-management',
     root: '认可管理',
-    pages: [
+    pages: withRenderFamilies([
       {
         id: 'ACC01',
         title: '认可项目台账',
@@ -331,12 +375,12 @@ export const governanceDomains = [
         flow: '登记证书 → 核对范围附件 → 发布有效信息 → 发起变更 → 影响确认 → 更新归档',
         requirement: '证书与范围版本保持一致，名称、地址、法人和能力变化形成受控记录',
       },
-    ],
+    ]),
   },
   {
     basename: 'cnas-10-system-management',
     root: '系统管理',
-    pages: [
+    pages: withRenderFamilies([
       {
         id: 'SYS01',
         title: '组织管理',
@@ -561,6 +605,6 @@ export const governanceDomains = [
         flow: '查看失败报文 → 核对字段映射 → 修正可重试问题 → 执行重试 → 核对业务结果',
         requirement: '敏感报文脱敏展示，重试保持幂等且记录发起人、原因、结果和关联数据',
       },
-    ],
+    ]),
   },
 ];
