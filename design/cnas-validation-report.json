@@ -7,8 +7,8 @@
       "desktopPages": 7,
       "mobilePages": 2,
       "reusableComponents": 41,
-      "componentInstances": 205,
-      "instantiatedComponentTypes": 21,
+      "componentInstances": 369,
+      "instantiatedComponentTypes": 23,
       "missingInstantiatedComponents": [
         "Button/Danger",
         "Button/Disabled",
@@ -24,16 +24,21 @@
         "Form/Checkbox/Warning",
         "Form/Checkbox/Danger",
         "Data/MatrixCell",
-        "Modal/Standard",
-        "Drawer/Detail",
         "Data/TableLayout",
         "Notification/Info",
         "Notification/Success",
         "Notification/Danger"
       ],
-      "semanticMarkers": 1,
+      "semanticMarkers": 2,
       "forbiddenVisibleTerms": 0,
       "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
       "componentAudit": {
         "manualCheckboxNodes": 0,
         "manualCheckboxTextNodes": 0,
@@ -46,16 +51,17 @@
       "layoutProblemNodes": [],
       "topLevelPageProblems": [],
       "previewSize": {
-        "width": 6120,
-        "height": 3384
+        "width": 3060,
+        "height": 2522
       },
       "expectedPreviewSize": {
-        "width": 6120,
-        "height": 3384
+        "width": 3060,
+        "height": 2522,
+        "scale": 0.5
       },
       "artifactHashes": {
-        "sourceSha256": "a57579d5579c719021b0c6428daf658754faec939f2c04895515efdbed6ea7ba",
-        "previewSha256": "4b173bccd4749a284b22f3ac21e1a0b4f0c02891c1228041478cc31da5a911fe"
+        "sourceSha256": "23bf945a30cf00e2704990a2a1779c62f4fd204e04d1222732924f16b141ca97",
+        "previewSha256": "759999374b237f53f10fc6b61ba829c1291676c10a1f489d0cd2e7e0f2f510c8"
       },
       "status": "passed",
       "errors": []
@@ -66,8 +72,8 @@
       "desktopPages": 9,
       "mobilePages": 0,
       "reusableComponents": 41,
-      "componentInstances": 273,
-      "instantiatedComponentTypes": 21,
+      "componentInstances": 465,
+      "instantiatedComponentTypes": 23,
       "missingInstantiatedComponents": [
         "Button/Danger",
         "Button/Disabled",
@@ -83,16 +89,21 @@
         "Data/MatrixCell",
         "Card/Standard",
         "Card/Metric",
-        "Modal/Standard",
-        "Drawer/Detail",
         "Notification/Info",
         "Notification/Success",
         "Notification/Warning",
         "Notification/Danger"
       ],
-      "semanticMarkers": 4,
+      "semanticMarkers": 6,
       "forbiddenVisibleTerms": 0,
       "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
       "componentAudit": {
         "manualCheckboxNodes": 0,
         "manualCheckboxTextNodes": 0,
@@ -105,16 +116,17 @@
       "layoutProblemNodes": [],
       "topLevelPageProblems": [],
       "previewSize": {
-        "width": 6120,
-        "height": 3440
+        "width": 3060,
+        "height": 2550
       },
       "expectedPreviewSize": {
-        "width": 6120,
-        "height": 3440
+        "width": 3060,
+        "height": 2550,
+        "scale": 0.5
       },
       "artifactHashes": {
-        "sourceSha256": "466a346201fbb6642859a2b5e1a1677a8c3319e842144174d1da545b26422861",
-        "previewSha256": "141d56d0b29266de56f1b5c76cc75bc3d8cb42c41cfc5df4aded737772c85475"
+        "sourceSha256": "e583e4019585d9a60c20b2013bda513271bde098185e17d2df12c54ea45e956a",
+        "previewSha256": "eaadb5a70a4f34d34a2fa18a742f6f183cb43c471d94549f9bd72afe9c4ac683"
       },
       "status": "passed",
       "errors": []
@@ -125,9 +137,11 @@
       "desktopPages": 12,
       "mobilePages": 1,
       "reusableComponents": 41,
-      "componentInstances": 420,
+      "componentInstances": 788,
       "instantiatedComponentTypes": 23,
       "missingInstantiatedComponents": [
+        "Button/Secondary",
+        "Button/Danger",
         "Button/Disabled",
         "Alert/Warning",
         "Alert/Danger",
@@ -140,16 +154,21 @@
         "Data/MatrixCell",
         "Card/Standard",
         "Card/Metric",
-        "Modal/Standard",
-        "Drawer/Detail",
         "Notification/Info",
         "Notification/Success",
         "Notification/Warning",
         "Notification/Danger"
       ],
-      "semanticMarkers": 8,
+      "semanticMarkers": 10,
       "forbiddenVisibleTerms": 0,
       "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
       "componentAudit": {
         "manualCheckboxNodes": 0,
         "manualCheckboxTextNodes": 0,
@@ -162,29 +181,32 @@
       "layoutProblemNodes": [],
       "topLevelPageProblems": [],
       "previewSize": {
-        "width": 6120,
-        "height": 4404
+        "width": 3060,
+        "height": 4052
       },
       "expectedPreviewSize": {
-        "width": 6120,
-        "height": 4404
+        "width": 3060,
+        "height": 4052,
+        "scale": 0.5
       },
       "artifactHashes": {
-        "sourceSha256": "4af4c1cc3272c3cf6b6576e51b3c14af2564a577f57911ed1897eb09a9f735e9",
-        "previewSha256": "9cdc59efd6a1f7bddcb37f9eb028160fb6eeb23d9ad7332f90ed02d08ed46b60"
+        "sourceSha256": "8deb1058b9299b41fc0f81c31d7172c5bec85397dbe9ce50c53fe482f1c4a607",
+        "previewSha256": "70067fea34ebda38ffc2918fdaa0b35b573b92d1982f6823775762adadd14d08"
       },
       "status": "passed",
       "errors": []
     },
     {
       "design": "cnas-04-testing-management",
-      "pages": 15,
-      "desktopPages": 14,
+      "pages": 16,
+      "desktopPages": 15,
       "mobilePages": 1,
       "reusableComponents": 41,
-      "componentInstances": 471,
+      "componentInstances": 964,
       "instantiatedComponentTypes": 25,
       "missingInstantiatedComponents": [
+        "Button/Danger",
+        "Button/Disabled",
         "Alert/Warning",
         "Alert/Danger",
         "State/Skeleton",
@@ -195,16 +217,21 @@
         "Data/MatrixCell",
         "Card/Standard",
         "Card/Metric",
-        "Modal/Standard",
-        "Drawer/Detail",
         "Notification/Info",
         "Notification/Success",
         "Notification/Warning",
         "Notification/Danger"
       ],
-      "semanticMarkers": 10,
+      "semanticMarkers": 13,
       "forbiddenVisibleTerms": 0,
       "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
       "componentAudit": {
         "manualCheckboxNodes": 0,
         "manualCheckboxTextNodes": 0,
@@ -217,16 +244,17 @@
       "layoutProblemNodes": [],
       "topLevelPageProblems": [],
       "previewSize": {
-        "width": 6120,
-        "height": 5424
+        "width": 3060,
+        "height": 4562
       },
       "expectedPreviewSize": {
-        "width": 6120,
-        "height": 5424
+        "width": 3060,
+        "height": 4562,
+        "scale": 0.5
       },
       "artifactHashes": {
-        "sourceSha256": "42d324cd08ac4878148995caea8c06aaeaab5a74ce6eba1dd8677aff7f58921f",
-        "previewSha256": "d2ef46ab560607d49be89bd854aad484d2b49fb48e5e7c66b9243d845bf6be30"
+        "sourceSha256": "797c63d1658e1071265274f3e913f1f854355558e35163fbb54e376e9173f9fb",
+        "previewSha256": "5663e8d4e7926b56582cb4bf69a562a27f05b3781422d8939fbbd25b6ecf77a8"
       },
       "status": "passed",
       "errors": []
@@ -237,11 +265,11 @@
       "desktopPages": 11,
       "mobilePages": 1,
       "reusableComponents": 41,
-      "componentInstances": 351,
-      "instantiatedComponentTypes": 25,
+      "componentInstances": 791,
+      "instantiatedComponentTypes": 27,
       "missingInstantiatedComponents": [
         "Button/Danger",
-        "Tag/Success",
+        "Button/Disabled",
         "Tag/Danger",
         "State/Empty",
         "Form/Switch/On",
@@ -250,121 +278,6 @@
         "Data/MatrixCell",
         "Card/Standard",
         "Card/Metric",
-        "Modal/Standard",
-        "Drawer/Detail",
-        "Notification/Info",
-        "Notification/Success",
-        "Notification/Warning",
-        "Notification/Danger"
-      ],
-      "semanticMarkers": 8,
-      "forbiddenVisibleTerms": 0,
-      "buttonAlignmentProblems": 0,
-      "componentAudit": {
-        "manualCheckboxNodes": 0,
-        "manualCheckboxTextNodes": 0,
-        "truncatedStepLabels": 0,
-        "specializedFooterProblems": 0,
-        "tableComponentProblems": 0
-      },
-      "navigationProblems": 0,
-      "layoutProblems": 0,
-      "layoutProblemNodes": [],
-      "topLevelPageProblems": [],
-      "previewSize": {
-        "width": 6120,
-        "height": 4404
-      },
-      "expectedPreviewSize": {
-        "width": 6120,
-        "height": 4404
-      },
-      "artifactHashes": {
-        "sourceSha256": "2d8b14252b16113e04a4b478654e76ea76a2f1a1d0754948efa5f978a3312c2c",
-        "previewSha256": "1335070d0717b04d3e7177efcd49755b4faa47348cbefc4ba05e54e31302c80c"
-      },
-      "status": "passed",
-      "errors": []
-    },
-    {
-      "design": "cnas-06-resource-management",
-      "pages": 27,
-      "desktopPages": 26,
-      "mobilePages": 1,
-      "reusableComponents": 41,
-      "componentInstances": 1057,
-      "instantiatedComponentTypes": 24,
-      "missingInstantiatedComponents": [
-        "Button/Danger",
-        "Alert/Warning",
-        "Alert/Danger",
-        "State/Skeleton",
-        "Form/Switch/On",
-        "Form/Switch/Off",
-        "Data/ListToolbar",
-        "Form/Checkbox/Warning",
-        "Form/Checkbox/Danger",
-        "Data/MatrixCell",
-        "Card/Standard",
-        "Card/Metric",
-        "Modal/Standard",
-        "Notification/Info",
-        "Notification/Success",
-        "Notification/Warning",
-        "Notification/Danger"
-      ],
-      "semanticMarkers": 19,
-      "forbiddenVisibleTerms": 0,
-      "buttonAlignmentProblems": 0,
-      "componentAudit": {
-        "manualCheckboxNodes": 0,
-        "manualCheckboxTextNodes": 0,
-        "truncatedStepLabels": 0,
-        "specializedFooterProblems": 0,
-        "tableComponentProblems": 0
-      },
-      "navigationProblems": 0,
-      "layoutProblems": 0,
-      "layoutProblemNodes": [],
-      "topLevelPageProblems": [],
-      "previewSize": {
-        "width": 6120,
-        "height": 8484
-      },
-      "expectedPreviewSize": {
-        "width": 6120,
-        "height": 8484
-      },
-      "artifactHashes": {
-        "sourceSha256": "839ea8fb60a9b93e968623dee76de131c0ed1b5b8dd5207f43d67bca68e01808",
-        "previewSha256": "9d0c138576109cc2fc7f47b9478a16ea1e79be7d4c897ef24d4301af5bfe4a34"
-      },
-      "status": "passed",
-      "errors": []
-    },
-    {
-      "design": "cnas-07-quality-management",
-      "pages": 12,
-      "desktopPages": 12,
-      "mobilePages": 0,
-      "reusableComponents": 41,
-      "componentInstances": 432,
-      "instantiatedComponentTypes": 23,
-      "missingInstantiatedComponents": [
-        "Button/Danger",
-        "Alert/Warning",
-        "Alert/Danger",
-        "State/Skeleton",
-        "State/Empty",
-        "Form/Switch/On",
-        "Form/Switch/Off",
-        "Data/ListToolbar",
-        "Form/Checkbox/Warning",
-        "Form/Checkbox/Danger",
-        "Data/MatrixCell",
-        "Card/Standard",
-        "Card/Metric",
-        "Modal/Standard",
         "Notification/Info",
         "Notification/Success",
         "Notification/Warning",
@@ -373,6 +286,13 @@
       "semanticMarkers": 10,
       "forbiddenVisibleTerms": 0,
       "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
       "componentAudit": {
         "manualCheckboxNodes": 0,
         "manualCheckboxTextNodes": 0,
@@ -385,28 +305,156 @@
       "layoutProblemNodes": [],
       "topLevelPageProblems": [],
       "previewSize": {
-        "width": 6120,
-        "height": 3440
+        "width": 3060,
+        "height": 4562
       },
       "expectedPreviewSize": {
-        "width": 6120,
-        "height": 3440
+        "width": 3060,
+        "height": 4562,
+        "scale": 0.5
       },
       "artifactHashes": {
-        "sourceSha256": "fbdc3b2dbc974be5dcb83c02333a0f467ed76139886f40a292e028b7f89e4a1f",
-        "previewSha256": "9e5c4ef3b5349ea94f35516db157047bc023dbeeccff80b7f9ba1582080726b4"
+        "sourceSha256": "955617c043bb8b734d8ba22c7b814458196f99ef84adfe4ff9f016c4c83e9aad",
+        "previewSha256": "c685da5edca46b816d92d0b247dffeca8a2c30f196c27408cbd7be2cab54f497"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-06-resource-management",
+      "pages": 85,
+      "desktopPages": 83,
+      "mobilePages": 2,
+      "reusableComponents": 41,
+      "componentInstances": 5802,
+      "instantiatedComponentTypes": 25,
+      "missingInstantiatedComponents": [
+        "Button/Danger",
+        "Button/Disabled",
+        "Alert/Warning",
+        "Alert/Danger",
+        "State/Skeleton",
+        "Form/Switch/On",
+        "Form/Switch/Off",
+        "Data/ListToolbar",
+        "Form/Checkbox/Danger",
+        "Data/MatrixCell",
+        "Card/Standard",
+        "Card/Metric",
+        "Notification/Info",
+        "Notification/Success",
+        "Notification/Warning",
+        "Notification/Danger"
+      ],
+      "semanticMarkers": 67,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
+      "componentAudit": {
+        "manualCheckboxNodes": 0,
+        "manualCheckboxTextNodes": 0,
+        "truncatedStepLabels": 0,
+        "specializedFooterProblems": 0,
+        "tableComponentProblems": 0
+      },
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "topLevelPageProblems": [],
+      "previewSize": {
+        "width": 3060,
+        "height": 21902
+      },
+      "expectedPreviewSize": {
+        "width": 3060,
+        "height": 21902,
+        "scale": 0.5
+      },
+      "artifactHashes": {
+        "sourceSha256": "da379617bcf822efaaee67e05b3f929660840b6dc3a6530396273dac9105adab",
+        "previewSha256": "313bcd4ccac63d3793431489b48c3ce57c431039f11a50e8cee4fde101bb2cb1"
+      },
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "design": "cnas-07-quality-management",
+      "pages": 36,
+      "desktopPages": 36,
+      "mobilePages": 0,
+      "reusableComponents": 41,
+      "componentInstances": 2131,
+      "instantiatedComponentTypes": 24,
+      "missingInstantiatedComponents": [
+        "Button/Danger",
+        "Button/Disabled",
+        "Alert/Warning",
+        "Alert/Danger",
+        "State/Skeleton",
+        "State/Empty",
+        "Form/Switch/On",
+        "Form/Switch/Off",
+        "Data/ListToolbar",
+        "Form/Checkbox/Danger",
+        "Data/MatrixCell",
+        "Card/Standard",
+        "Card/Metric",
+        "Notification/Info",
+        "Notification/Success",
+        "Notification/Warning",
+        "Notification/Danger"
+      ],
+      "semanticMarkers": 30,
+      "forbiddenVisibleTerms": 0,
+      "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
+      "componentAudit": {
+        "manualCheckboxNodes": 0,
+        "manualCheckboxTextNodes": 0,
+        "truncatedStepLabels": 0,
+        "specializedFooterProblems": 0,
+        "tableComponentProblems": 0
+      },
+      "navigationProblems": 0,
+      "layoutProblems": 0,
+      "layoutProblemNodes": [],
+      "topLevelPageProblems": [],
+      "previewSize": {
+        "width": 3060,
+        "height": 9690
+      },
+      "expectedPreviewSize": {
+        "width": 3060,
+        "height": 9690,
+        "scale": 0.5
+      },
+      "artifactHashes": {
+        "sourceSha256": "6ac5161ac20db58ece491e3cd3aaf4b7957214095e908701da0e253ccb869415",
+        "previewSha256": "2ff5b57a7b87550664096309489c67f67288040a96067847b8659df53df97b75"
       },
       "status": "passed",
       "errors": []
     },
     {
       "design": "cnas-08-governance-management",
-      "pages": 15,
-      "desktopPages": 15,
+      "pages": 20,
+      "desktopPages": 20,
       "mobilePages": 0,
       "reusableComponents": 41,
-      "componentInstances": 479,
-      "instantiatedComponentTypes": 23,
+      "componentInstances": 1426,
+      "instantiatedComponentTypes": 24,
       "missingInstantiatedComponents": [
         "Button/Danger",
         "Alert/Warning",
@@ -421,15 +469,21 @@
         "Data/MatrixCell",
         "Card/Standard",
         "Card/Metric",
-        "Modal/Standard",
         "Notification/Info",
         "Notification/Success",
         "Notification/Warning",
         "Notification/Danger"
       ],
-      "semanticMarkers": 13,
+      "semanticMarkers": 21,
       "forbiddenVisibleTerms": 0,
       "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
       "componentAudit": {
         "manualCheckboxNodes": 0,
         "manualCheckboxTextNodes": 0,
@@ -442,51 +496,61 @@
       "layoutProblemNodes": [],
       "topLevelPageProblems": [],
       "previewSize": {
-        "width": 6120,
-        "height": 4460
+        "width": 3060,
+        "height": 8160
       },
       "expectedPreviewSize": {
-        "width": 6120,
-        "height": 4460
+        "width": 3060,
+        "height": 8160,
+        "scale": 0.5
       },
       "artifactHashes": {
-        "sourceSha256": "a4373888481a42f91fd3f09e4b3d754acb931d2c24c7481f2593f8e3d15d3eee",
-        "previewSha256": "a45a10c83767962a041169be04d43a92d36341c55c58c23f7803638b1dcbac25"
+        "sourceSha256": "37f1e6f5bbf50df4c20881584ae6f1e053c8d77591b2f247b9152a0756181fc8",
+        "previewSha256": "cea59447e27a0cdd2aff359de13c957c13963d89761b8daae1f4af0e0d4171b8"
       },
       "status": "passed",
       "errors": []
     },
     {
       "design": "cnas-09-accreditation-management",
-      "pages": 8,
-      "desktopPages": 8,
+      "pages": 10,
+      "desktopPages": 10,
       "mobilePages": 0,
       "reusableComponents": 41,
-      "componentInstances": 282,
-      "instantiatedComponentTypes": 23,
+      "componentInstances": 774,
+      "instantiatedComponentTypes": 21,
       "missingInstantiatedComponents": [
+        "Button/Secondary",
         "Button/Danger",
+        "Button/Disabled",
         "Alert/Warning",
         "Alert/Danger",
         "State/Skeleton",
         "State/Empty",
         "Form/Switch/On",
         "Form/Switch/Off",
+        "Form/FilterBar",
         "Data/ListToolbar",
         "Form/Checkbox/Warning",
         "Form/Checkbox/Danger",
         "Data/MatrixCell",
         "Card/Standard",
         "Card/Metric",
-        "Modal/Standard",
         "Notification/Info",
         "Notification/Success",
         "Notification/Warning",
         "Notification/Danger"
       ],
-      "semanticMarkers": 7,
+      "semanticMarkers": 10,
       "forbiddenVisibleTerms": 0,
       "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
       "componentAudit": {
         "manualCheckboxNodes": 0,
         "manualCheckboxTextNodes": 0,
@@ -499,30 +563,33 @@
       "layoutProblemNodes": [],
       "topLevelPageProblems": [],
       "previewSize": {
-        "width": 6120,
-        "height": 2420
+        "width": 3060,
+        "height": 4080
       },
       "expectedPreviewSize": {
-        "width": 6120,
-        "height": 2420
+        "width": 3060,
+        "height": 4080,
+        "scale": 0.5
       },
       "artifactHashes": {
-        "sourceSha256": "20420dc96cd28c27b7a77c14a75340cff21dfde61cb21da6e7df3b03303ce4ae",
-        "previewSha256": "0d81d8b1427843ffc478c9aa0bbddcc987efda409fac46a90441bb9dea949232"
+        "sourceSha256": "146646221b21c1d6f9a30d656f0e8dd7466341f1f6eadf6bd752e7435033aa20",
+        "previewSha256": "12524eefe56ca4cd8018ec326a6c1dc8d0486a0447b19d059d45ad58eabd60b7"
       },
       "status": "passed",
       "errors": []
     },
     {
       "design": "cnas-10-system-management",
-      "pages": 16,
-      "desktopPages": 16,
+      "pages": 22,
+      "desktopPages": 22,
       "mobilePages": 0,
       "reusableComponents": 41,
-      "componentInstances": 586,
-      "instantiatedComponentTypes": 24,
+      "componentInstances": 1868,
+      "instantiatedComponentTypes": 23,
       "missingInstantiatedComponents": [
+        "Button/Secondary",
         "Button/Danger",
+        "Button/Disabled",
         "Alert/Danger",
         "State/Skeleton",
         "State/Empty",
@@ -534,15 +601,21 @@
         "Data/MatrixCell",
         "Card/Standard",
         "Card/Metric",
-        "Modal/Standard",
         "Notification/Info",
         "Notification/Success",
         "Notification/Warning",
         "Notification/Danger"
       ],
-      "semanticMarkers": 9,
+      "semanticMarkers": 17,
       "forbiddenVisibleTerms": 0,
       "buttonAlignmentProblems": 0,
+      "topLevelDesignBlockProblems": 0,
+      "sourceActionContractProblems": 0,
+      "stateBoardActionProblems": 0,
+      "stateSurfaceProblems": 0,
+      "disabledActionSemanticProblems": 0,
+      "workflowStepSemanticProblems": 0,
+      "utilityActions": 0,
       "componentAudit": {
         "manualCheckboxNodes": 0,
         "manualCheckboxTextNodes": 0,
@@ -555,16 +628,17 @@
       "layoutProblemNodes": [],
       "topLevelPageProblems": [],
       "previewSize": {
-        "width": 6120,
-        "height": 4460
+        "width": 3060,
+        "height": 7140
       },
       "expectedPreviewSize": {
-        "width": 6120,
-        "height": 4460
+        "width": 3060,
+        "height": 7140,
+        "scale": 0.5
       },
       "artifactHashes": {
-        "sourceSha256": "0940b32132ebf9c8e56fd64d5e0ff924a31eea9fd0f302b02f4af29dcf4e8a8b",
-        "previewSha256": "d6997209503b820736c2126f459d52008fc3e2c7bfdbfe75030ec1d5f68baeda"
+        "sourceSha256": "de5c38fb8219b557770534cd9c04afc12c6e81361b8aed368478ae0ca73abd1c",
+        "previewSha256": "807b08ce26bc5f72336f099a9ea2dec943a302f91a9601267675dbe48c91edc5"
       },
       "status": "passed",
       "errors": []
@@ -586,7 +660,7 @@
         "height": 2380
       },
       "artifactHashes": {
-        "sourceSha256": "b4d0445531977fc63494f971f69b131055acc6dff9b06b6ea5bd637de9aa3431",
+        "sourceSha256": "48e2c6545388097aa47bd5aa6d3783030f17ecea9e1bca3b197ef7f98494fe7f",
         "previewSha256": "5aed35c18db3c2162843238f70ce0eb0e93a071c4e2cb5bc97ba256dfc084fb2"
       },
       "status": "passed",
@@ -597,7 +671,7 @@
     "designs": 11,
     "businessDesigns": 10,
     "designSystems": 1,
-    "pages": 136,
+    "pages": 232,
     "passed": 11,
     "failed": 0
   }

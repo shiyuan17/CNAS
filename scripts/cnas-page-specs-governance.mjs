@@ -4,6 +4,7 @@ const renderFamilies = {
   GOV02: 'lifecycle',
   GOV03: 'approval',
   GOV04: 'workflow',
+  'GOV04-EXEC': 'workflow',
   GOV05: 'verification',
   GOV06: 'lifecycle',
   GOV07: 'lifecycle',
@@ -38,9 +39,570 @@ const renderFamilies = {
   SYS16: 'workflow',
 };
 
-const withRenderFamilies = (pages) => pages.map((item) => (
-  renderFamilies[item.id] ? { ...item, renderFamily: renderFamilies[item.id] } : item
-));
+const interactionProfileVersion = 1;
+
+const mergeProfileSection = (base, override = {}) => ({ ...base, ...override });
+
+const createInteractionProfile = (overrides = {}) => ({
+  version: interactionProfileVersion,
+  source: 'spec',
+  edit: mergeProfileSection({
+    enabled: true,
+    mode: 'form',
+    fields: ['业务对象', '变更原因', '关联依据', '当前状态'],
+    validation: ['必填项完整', '当前版本不可覆盖', '关联证据与权限可用'],
+    actions: ['保存草稿', '提交审批'],
+  }, overrides.edit),
+  detail: mergeProfileSection({
+    enabled: true,
+    mode: 'detail-drawer',
+    sections: ['基本信息', '关联业务', '当前状态', '版本与审计'],
+    entry: '查看详情',
+  }, overrides.detail),
+  modal: mergeProfileSection({
+    enabled: true,
+    variant: 'standard',
+    title: '确认提交当前变更',
+    action: '确认提交',
+    content: '提交后进入受控流程，并保留操作原因与审计留痕。',
+  }, overrides.modal),
+  blocker: mergeProfileSection({
+    enabled: true,
+    state: 'blocked',
+    reasons: ['当前账号无相应权限', '必填项或关键证据缺失', '关联对象状态不满足当前操作'],
+    action: '保存草稿或返回处理',
+  }, overrides.blocker),
+  success: mergeProfileSection({
+    enabled: true,
+    tone: 'success',
+    title: '操作成功',
+    message: '变更已保存并记录审计，流程已进入下一节点。',
+  }, overrides.success),
+  flow: mergeProfileSection({
+    enabled: true,
+    steps: ['编辑', '校验', '提交审批', '等待处理'],
+    currentStep: 1,
+    pending: '等待下一节点',
+  }, overrides.flow),
+  audit: mergeProfileSection({
+    enabled: true,
+    events: ['打开页面 · 当前用户', '保存草稿 · 已记录', '提交变更 · 等待下一节点'],
+    actor: '当前用户',
+    mode: 'read-only',
+  }, overrides.audit),
+});
+
+const interactionProfilesByFamily = {
+  lifecycle: createInteractionProfile({
+    edit: { mode: 'version-editor', validation: ['变更原因必填', '新版本号不可覆盖已发布版本', '关联依据与影响范围完整'] },
+    detail: { mode: 'version-drawer', sections: ['基本信息', '版本对比', '影响范围', '审计记录'] },
+    modal: { variant: 'warning', title: '确认变更版本状态', action: '确认变更', content: '原版本保留只读，新版本按受控流程处理；未批准的审批层级和签名方式显示为[待确认]。' },
+    flow: { steps: ['选择对象', '编辑新版本', '版本对比', '提交审批', '发布或作废'], currentStep: 2 },
+  }),
+  approval: createInteractionProfile({
+    edit: { mode: 'approval-form', validation: ['审批意见必填', '审批人与申请人职责分离', '关联证据版本有效'] },
+    modal: { variant: 'warning', title: '确认提交审批结论', action: '提交结论', content: '提交后保留审批意见与审计留痕；签名实现和审批层级为[待确认]。' },
+    blocker: { reasons: ['当前账号无审批权限', '审批人与申请人职责未分离', '证据或影响范围信息缺失'] },
+    flow: { steps: ['打开待办', '核对版本与证据', '填写审批意见', '提交通过或退回'], currentStep: 2 },
+  }),
+  workflow: createInteractionProfile({
+    edit: { mode: 'workflow-editor', validation: ['节点与办理人完整', '条件分支可达', '草稿版本不可覆盖已发布版本'] },
+    modal: { variant: 'warning', title: '确认发布或回滚流程版本', action: '确认操作', content: '发布生成独立版本；回滚仅作用于后续实例，已运行实例继续使用原版本，具体兼容策略为[待确认]。' },
+    blocker: { reasons: ['当前账号无流程发布权限', '存在不可达节点或无办理人节点', '运行实例或版本依赖阻止当前操作'] },
+    success: { message: '流程版本操作已受理，版本与审计记录已保留。' },
+    flow: { steps: ['编辑草稿', '结构校验', '测试流程', '提交审批', '发布或回滚'], currentStep: 2 },
+  }),
+  verification: createInteractionProfile({
+    edit: { mode: 'evidence-form', validation: ['结论与证据完整', '证据版本仍有效', '责任人与验证人职责分离'] },
+    modal: { variant: 'standard', title: '确认提交验证结果', action: '提交验证', content: '提交后保留结论、证据版本、责任人与时间信息，缺口可退回补充。' },
+    blocker: { reasons: ['当前账号无验证权限', '证据缺失或版本已失效', '验证人与责任人职责未分离'] },
+    flow: { steps: ['选择条款或问题', '补充证据', '形成结论', '提交验证'], currentStep: 2 },
+  }),
+};
+
+const interactionProfilesByKind = {
+  listDrawer: createInteractionProfile({
+    edit: { mode: 'drawer', actions: ['新建草稿', '查看详情'] },
+    modal: { title: '确认保存当前记录', action: '确认保存' },
+    flow: { steps: ['筛选记录', '打开详情', '新建或调整', '保存草稿'], currentStep: 2 },
+  }),
+  detail: createInteractionProfile({
+    edit: { enabled: false, mode: 'read-only', actions: ['查看关联记录'] },
+    modal: { enabled: false, title: '只读详情' },
+    flow: { steps: ['打开详情', '核对状态', '查看审计记录'], currentStep: 1 },
+  }),
+  auditLog: createInteractionProfile({
+    edit: { enabled: false, mode: 'read-only', actions: ['筛选', '查看详情'] },
+    modal: { enabled: false, title: '只读审计详情' },
+    flow: { steps: ['设置筛选', '查看日志', '对比变更'], currentStep: 1 },
+  }),
+};
+
+const interactionProfilesById = {
+  GOV01: createInteractionProfile({
+    edit: { enabled: false, mode: 'read-only', fields: ['文件编号', '文件名称', '版本', '受控状态'], actions: ['查看版本', '申请受控下载'] },
+    detail: { mode: 'version-drawer', sections: ['文件信息', '版本时间线', '适用范围', '下载与审计'] },
+    modal: { title: '确认申请受控下载', action: '提交下载申请', content: '下载权限按数据范围校验，文件历史版本保持只读；具体保存期限为[待确认]。' },
+    blocker: { reasons: ['当前账号无文件访问权限', '文件已作废或不在适用范围', '下载申请缺少使用目的'] },
+    success: { title: '申请已提交', message: '受控下载申请已记录，待授权后提供文件。' },
+    flow: { steps: ['筛选文件', '查看版本', '核对适用范围', '申请受控下载'], currentStep: 2 },
+    audit: { events: ['打开文件详情 · 当前用户', '查看版本 · 已记录', '申请下载 · 待授权'], actor: '当前用户' },
+  }),
+  GOV02: createInteractionProfile({
+    edit: { mode: 'version-editor', fields: ['修订原因', '修订内容', '关联依据', '目标版本'], validation: ['修订原因必填', '目标版本不可覆盖已发布版本', '变更内容与影响范围完整'], actions: ['保存修订草稿', '提交审核'] },
+    detail: { mode: 'version-drawer', sections: ['修订申请', '前后版本对比', '关联依据', '草稿审计'] },
+    modal: { variant: 'warning', title: '确认提交文件修订审核', action: '提交审核', content: '提交后原版本保持只读，新版本等待受控审核；审批层级和签名方式为[待确认]。' },
+    blocker: { reasons: ['当前版本已发布，仅可创建新版本', '当前账号无文件编制或提交权限', '修订原因、内容或关联依据缺失'] },
+    success: { title: '修订草稿已保存', message: '修订内容已保留前后版本关系，可继续编辑或提交审核。' },
+    flow: { steps: ['选择文件', '填写修订原因', '编辑内容', '版本对比', '提交审核'], currentStep: 3, pending: '等待审核处理' },
+    audit: { events: ['打开修订任务 · 当前用户', '保存修订草稿 · 已记录', '提交审核 · 等待处理'], actor: '当前用户' },
+  }),
+  GOV04: createInteractionProfile({
+    edit: { mode: 'publish-form', fields: ['发布版本', '生效日期', '分发范围', '签收要求'], validation: ['发布版本已批准', '分发范围完整', '生效信息与影响岗位已确认'] },
+    modal: { variant: 'warning', title: '确认发布受控文件', action: '确认发布', content: '发布后生成分发与签收任务，具体签名实现和通知协议为[待确认]。' },
+    blocker: { reasons: ['文件尚未完成批准', '分发范围或签收要求缺失', '当前账号无发布权限'] },
+    success: { title: '文件发布已受理', message: '新版本已生成分发任务，历史版本保持可追溯。' },
+    flow: { steps: ['确认批准版本', '设置生效信息', '配置分发范围', '确认发布', '跟踪签收'], currentStep: 2 },
+  }),
+  'GOV04-EXEC': createInteractionProfile({
+    edit: { mode: 'signoff-execution', fields: ['分发对象', '签收状态', '签收时间', '执行证据'], validation: ['分发对象与适用岗位完整', '签收人与签收时间可追溯', '未签收对象保持阻断状态'], actions: ['记录签收', '催办未签收人员', '确认全部签收'] },
+    detail: { mode: 'detail-drawer', sections: ['分发清单', '签收进度', '执行证据', '催办与审计'] },
+    modal: { variant: 'warning', title: '确认完成文件签收执行', action: '确认全部签收', content: '仅当分发范围内全部对象完成签收并具备执行证据后，文件才可进入作废回收节点；签名实现和通知协议为[待确认]。' },
+    blocker: { reasons: ['仍有适用岗位未完成签收', '签收时间或执行证据缺失', '当前账号无签收确认或催办权限'] },
+    success: { title: '签收执行已完成', message: '签收对象、执行证据和催办记录已留痕，可继续进入作废与回收节点。' },
+    flow: { steps: ['核对分发对象', '跟踪签收', '补充执行证据', '确认全部签收'], currentStep: 2, pending: '签收未完成时停留在当前节点' },
+    audit: { events: ['打开签收任务 · 当前用户', '催办未签收人员 · 已记录', '确认全部签收 · 等待条件满足'], actor: '当前用户' },
+  }),
+  GOV06: createInteractionProfile({
+    edit: { mode: 'version-disposition', fields: ['作废原因', '替代文件', '回收范围', '处置状态'], validation: ['作废原因必填', '替代文件或影响说明完整', '回收范围已确认'] },
+    modal: { variant: 'danger', title: '确认发起文件作废', action: '提交作废申请', content: '作废申请进入受控审批，原版本保留只读且不可继续作为有效文件使用。' },
+    blocker: { reasons: ['当前账号无作废权限', '未确认受影响岗位与回收范围', '替代文件或处置依据缺失'] },
+    success: { title: '作废申请已提交', message: '文件作废申请与回收任务已记录，等待后续处理。' },
+    flow: { steps: ['选择文件版本', '确认影响范围', '提交作废审批', '回收副本', '关闭处置'], currentStep: 2 },
+  }),
+  GOV09: createInteractionProfile({
+    edit: { mode: 'controlled-request', fields: ['档案编号', '使用目的', '借阅范围', '处置方式'], validation: ['使用目的必填', '数据范围与借阅期限完整', '销毁条件与审批要求为[待确认]'] },
+    detail: { mode: 'detail-drawer', sections: ['档案信息', '借阅记录', '归还状态', '销毁审计'] },
+    modal: { variant: 'warning', title: '确认提交借阅或销毁申请', action: '提交受控处理申请', content: '借阅、归还、延期或销毁均保留申请与处置证据；保存期限和审批层级为[待确认]。' },
+    blocker: { reasons: ['当前账号无档案访问权限', '借阅范围或使用目的缺失', '档案状态不允许借阅或销毁'] },
+    success: { title: '受控处理申请已提交', message: '申请已记录，档案处理结果将在授权流程完成后更新。' },
+    flow: { steps: ['选择档案', '填写使用目的', '提交借阅或销毁申请', '审批与交接', '归还或关闭处置'], currentStep: 2 },
+    audit: { events: ['打开档案详情 · 当前用户', '提交借阅申请 · 待授权', '提交销毁申请 · 待确认'], actor: '当前用户' },
+  }),
+  GOV11: createInteractionProfile({
+    edit: { mode: 'audit-evidence', fields: ['检查条款', '客观证据', '符合性判断', '审核结论'], validation: ['检查条款与证据完整', '审核员与被审核工作职责不冲突', '结论变更需填写原因'], actions: ['保存检查草稿', '提交审核报告'] },
+    detail: { mode: 'detail-drawer', sections: ['检查清单', '客观证据', '发现记录', '结论变更审计'] },
+    modal: { title: '确认提交内部审核结果', action: '提交审核报告', content: '提交后形成只读报告与发现记录，退回补充时保留原结论和变更原因。' },
+    blocker: { reasons: ['当前账号无审核提交权限', '关键条款缺少客观证据', '审核员与被审核工作职责冲突'] },
+    success: { title: '审核结果已提交', message: '审核报告与证据关联已保存，发现项可进入整改流程。' },
+    flow: { steps: ['启动审核', '执行检查表', '记录客观证据', '确认发现', '提交审核报告'], currentStep: 3 },
+    audit: { events: ['打开审核任务 · 当前用户', '记录客观证据 · 已记录', '提交审核报告 · 等待处理'], actor: '当前用户' },
+  }),
+  GOV14: createInteractionProfile({
+    edit: { mode: 'review-measures', fields: ['评审输入', '会议结论', '责任人', '完成期限'], validation: ['评审输入与结论完整', '措施责任人与期限明确', '未完成措施不得关闭'], actions: ['保存评审草稿', '提交措施跟踪'] },
+    detail: { mode: 'detail-drawer', sections: ['评审输入', '会议结论', '措施清单', '完成验证审计'] },
+    modal: { variant: 'warning', title: '确认提交管理评审措施', action: '提交措施跟踪', content: '提交后形成责任人与期限记录，未完成措施继续保持跟踪状态；关闭条件按需求确认。' },
+    blocker: { reasons: ['评审输入或决策事项缺失', '措施没有责任人或期限', '仍有未验证的开放措施'] },
+    success: { title: '评审措施已提交', message: '管理评审决策与措施跟踪已记录，开放项保持可追溯。' },
+    flow: { steps: ['核对评审输入', '记录会议结论', '分配措施', '跟踪执行', '验证并归档'], currentStep: 3 },
+    audit: { events: ['打开评审记录 · 当前用户', '保存会议结论 · 已记录', '提交措施跟踪 · 等待验证'], actor: '当前用户' },
+  }),
+  ACC01: createInteractionProfile({
+    edit: { mode: 'accreditation-project', fields: ['项目类型', '认可机构', '申请范围', '项目负责人'], validation: ['项目类型与范围完整', '项目负责人权限有效', '关联材料版本可追溯'] },
+    detail: { mode: 'version-drawer', sections: ['项目基本信息', '认可范围版本', '沟通记录', '项目审计'] },
+    modal: { title: '确认创建认可项目', action: '创建项目', content: '项目创建后按受控流程跟踪材料、评审问题与证书结果，外部审批安排为[待确认]。' },
+    blocker: { reasons: ['当前账号无认可项目权限', '认可范围或负责人缺失', '关联材料版本不可用'] },
+    success: { title: '认可项目已创建', message: '项目台账已建立，可继续维护范围、材料和评审任务。' },
+    flow: { steps: ['创建项目', '确定评审类型', '编制认可范围', '跟踪材料与评审', '项目归档'], currentStep: 2 },
+  }),
+  ACC04: createInteractionProfile({
+    edit: { mode: 'evidence-matrix', fields: ['认可条款', '责任部门', '符合性判断', '客观证据'], validation: ['条款责任人与结论完整', '证据版本有效且可追溯', '缺口必须关联措施'], actions: ['保存自查草稿', '提交自查结果'] },
+    detail: { mode: 'detail-drawer', sections: ['条款要求', '符合性判断', '证据清单', '缺口与措施'] },
+    modal: { title: '确认提交认可条款自查', action: '提交自查结果', content: '提交后保留条款、结论和证据版本；外部评审签名或接口要求为[待确认]。' },
+    blocker: { reasons: ['当前账号无条款自查权限', '条款缺少责任人或客观证据', '证据已失效或缺口未关联措施'] },
+    success: { title: '条款自查已提交', message: '自查结论与证据包已记录，缺口进入整改跟踪。' },
+    flow: { steps: ['导入适用条款', '分配责任', '开展自查', '关联证据', '提交缺口与措施'], currentStep: 3 },
+    audit: { events: ['打开条款自查 · 当前用户', '关联证据版本 · 已记录', '提交自查结果 · 等待处理'], actor: '当前用户' },
+  }),
+  ACC07: createInteractionProfile({
+    edit: { mode: 'accreditation-capa', fields: ['问题类型', '原因与影响', '整改措施', '验证证据'], validation: ['问题原因与影响完整', '措施责任人与期限明确', '验证证据必须对应当前提交轮次'], actions: ['保存整改草稿', '提交验证'] },
+    detail: { mode: 'detail-drawer', sections: ['评审问题', '历次提交', '整改措施', '验证结论'] },
+    modal: { variant: 'warning', title: '确认提交评审问题整改', action: '提交验证', content: '提交后生成当前轮次的只读证据记录，退回时保留原提交与意见。' },
+    blocker: { reasons: ['当前账号无整改提交权限', '原因、措施或证据缺失', '当前问题已关闭或不允许重复提交'] },
+    success: { title: '整改证据已提交', message: '本轮整改材料已保留版本与提交人，等待内部验证。' },
+    flow: { steps: ['登记评审问题', '分析原因与影响', '制定整改措施', '提交证据', '补充或关闭'], currentStep: 3 },
+    audit: { events: ['打开评审问题 · 当前用户', '保存整改草稿 · 已记录', '提交第N轮证据 · 等待验证'], actor: '当前用户' },
+  }),
+  SYS01: createInteractionProfile({
+    edit: { mode: 'organization-permission', fields: ['组织节点', '负责人', '关联岗位', '数据范围'], validation: ['组织关系无循环', '变更影响用户与岗位已核对', '当前账号具备组织配置权限'], actions: ['保存组织草稿', '提交生效'] },
+    detail: { mode: 'detail-drawer', sections: ['组织层级', '负责人和岗位', '关联用户', '变更影响审计'] },
+    modal: { variant: 'warning', title: '确认提交组织权限变更', action: '提交生效', content: '提交后保留组织关系历史与影响范围，具体生效时间和审批层级为[待确认]。' },
+    blocker: { reasons: ['当前账号无组织或权限配置权限', '组织关系存在循环或孤立节点', '关联用户、岗位或数据范围影响未确认'] },
+    success: { title: '组织变更已受理', message: '组织关系与权限影响已记录，变更等待受控生效。' },
+    flow: { steps: ['选择组织节点', '调整层级与负责人', '核对岗位权限', '校验影响', '提交生效'], currentStep: 3 },
+    audit: { events: ['打开组织节点 · 当前用户', '保存组织草稿 · 已记录', '提交权限变更 · 等待生效'], actor: '当前用户' },
+  }),
+  SYS07: createInteractionProfile({
+    edit: { mode: 'workflow-version', fields: ['流程名称', '适用业务', '节点配置', '版本'], validation: ['节点与条件可达', '新版本不可覆盖已发布版本', '运行实例影响已核对'], actions: ['保存流程草稿', '提交发布'] },
+    detail: { mode: 'version-drawer', sections: ['流程版本', '节点与分支', '运行实例影响', '发布与回滚审计'] },
+    modal: { variant: 'warning', title: '确认发布或回滚工作流', action: '确认发布或回滚', content: '发布只影响新建实例；回滚保留版本和审计记录，运行实例兼容策略为[待确认]。' },
+    blocker: { reasons: ['当前账号无流程发布或回滚权限', '流程存在不可达节点或缺少办理人', '运行实例影响尚未确认'] },
+    success: { title: '工作流版本操作已受理', message: '发布或回滚请求已记录，版本切换结果可在审计记录中查看。' },
+    flow: { steps: ['编辑流程草稿', '校验节点与条件', '测试实例', '提交发布', '切换或回滚版本'], currentStep: 2 },
+    audit: { events: ['打开工作流版本 · 当前用户', '保存流程草稿 · 已记录', '提交发布或回滚 · 等待处理'], actor: '当前用户' },
+  }),
+  SYS13: createInteractionProfile({
+    edit: { mode: 'workflow-designer', fields: ['流程版本', '节点办理人', '条件分支', '超时规则'], validation: ['节点闭环且可达', '办理人和条件完整', '发布生成新版本且不可覆盖已运行版本'], actions: ['保存设计草稿', '提交发布'] },
+    detail: { mode: 'version-drawer', sections: ['流程图', '节点配置', '校验结果', '版本审计'] },
+    modal: { variant: 'warning', title: '确认发布工作流设计', action: '提交发布', content: '发布前必须通过结构校验；已发布版本保持只读，签名实现和审批层级为[待确认]。' },
+    blocker: { reasons: ['存在循环、不可达或无办理人节点', '超时规则或条件分支不完整', '当前账号无工作流发布权限'] },
+    success: { title: '工作流设计已提交', message: '校验结果与新版本草稿已记录，等待受控发布。' },
+    flow: { steps: ['创建草稿', '编排节点', '配置条件与时限', '结构校验', '提交发布'], currentStep: 3 },
+    audit: { events: ['打开工作流设计 · 当前用户', '运行结构校验 · 已记录', '提交发布 · 等待处理'], actor: '当前用户' },
+  }),
+  SYS14: createInteractionProfile({
+    edit: { mode: 'template-editor', fields: ['模板版本', '版式区域', '数据项绑定', '预览样本'], validation: ['数据项映射完整', '未授权数据项不得绑定', '分页、长文本和缺失数据预览通过'], actions: ['保存模板草稿', '提交校验'] },
+    detail: { mode: 'version-drawer', sections: ['模板版本', '数据项映射', '预览结果', '校验审计'] },
+    modal: { title: '确认提交模板校验', action: '提交校验', content: '校验结果与预览样本将进入版本记录，未通过时保留错误定位并允许继续编辑。' },
+    blocker: { reasons: ['存在未绑定或未授权数据项', '分页、长文本或缺失数据预览失败', '当前账号无模板编辑权限'] },
+    success: { title: '模板校验已完成', message: '校验结果与预览样本已记录，可继续提交发布。' },
+    flow: { steps: ['选择模板版本', '编辑版式', '绑定数据项', '生成预览', '提交校验'], currentStep: 3 },
+    audit: { events: ['打开模板编辑 · 当前用户', '生成预览 · 已记录', '提交模板校验 · 等待处理'], actor: '当前用户' },
+  }),
+  SYS16: createInteractionProfile({
+    edit: { enabled: true, mode: 'idempotent-retry', fields: ['交换批次', '错误类型', '错误信息', '重试状态'], validation: ['错误类型允许重试', '业务结果未重复落库', '幂等标识按接口约定校验[待确认]'], actions: ['查看脱敏报文', '发起幂等重试'] },
+    detail: { mode: 'detail-drawer', sections: ['失败批次', '脱敏错误信息', '字段映射', '重试与审计'], entry: '查看失败详情' },
+    modal: { variant: 'warning', title: '确认发起幂等重试', action: '发起重试', content: '同一交换批次重复点击不创建重复处理；幂等标识、重试次数和接口协议以[待确认]约定为准。' },
+    blocker: { reasons: ['当前账号无接口重试权限', '错误类型不可重试或仍在处理中', '业务结果已存在或缺少幂等标识[待确认]'] },
+    success: { title: '重试已受理', message: '重试请求已按交换批次记录，结果可在接口审计中追踪。' },
+    flow: { steps: ['查看失败报文', '核对字段映射', '确认可重试', '发起幂等重试', '核对业务结果'], currentStep: 2 },
+    audit: { events: ['打开失败详情 · 当前用户', '查看脱敏报文 · 已记录', '发起幂等重试 · 已记录'], actor: '当前用户' },
+  }),
+};
+
+const flowPageMetadata = {
+  GOV01: {
+    flowIds: ['P07'], flowNode: 'document-detail', primaryNext: 'GOV02', returnTarget: 'GOV01',
+    alternatePaths: [{ action: '查看历史版本', target: 'GOV01' }, { action: '发起作废', target: 'GOV06' }],
+    allowedActions: ['查看详情', '查看版本', '申请受控下载', '发起修订', '发起作废'],
+  },
+  GOV02: {
+    flowIds: ['P07'], flowNode: 'revision-request', primaryNext: 'GOV03', returnTarget: 'GOV01',
+    alternatePaths: [{ action: '保存草稿', target: 'GOV02' }, { action: '审核退回', target: 'GOV02' }, { action: '撤回申请', target: 'GOV01' }],
+    allowedActions: ['创建修订版本', '编辑内容', '版本对比', '保存草稿', '提交审核', '撤回申请'],
+  },
+  GOV03: {
+    flowIds: ['P07'], flowNode: 'review-approval', primaryNext: 'GOV04', returnTarget: 'GOV02',
+    alternatePaths: [{ action: '审核退回', target: 'GOV02' }, { action: '批准退回', target: 'GOV02' }, { action: '转交办理', target: 'GOV03' }],
+    allowedActions: ['查看版本差异', '填写审核意见', '审核通过', '批准发布', '退回修改', '转交办理'],
+  },
+  GOV04: {
+    flowIds: ['P07'], flowNode: 'publish-distribution', primaryNext: 'GOV04-EXEC', returnTarget: 'GOV03',
+    alternatePaths: [{ action: '发布条件不完整', target: 'GOV04', state: '待发布' }, { action: '生效后发起修订', target: 'GOV02' }, { action: '发布撤回', target: 'GOV03' }],
+    allowedActions: ['设置生效日期', '配置分发范围', '发布文件', '跟踪签收', '催办未签收人员', '确认执行'],
+  },
+  'GOV04-EXEC': {
+    flowIds: ['P07'], flowNode: 'signoff-execution', primaryNext: 'GOV06', returnTarget: 'GOV04',
+    alternatePaths: [{ action: '签收未完成', target: 'GOV04-EXEC', state: '待签收执行' }, { action: '执行证据缺失', target: 'GOV04-EXEC', state: '阻断' }, { action: '发布信息需更正', target: 'GOV04' }],
+    allowedActions: ['查看分发详情', '催办未签收人员', '记录签收', '确认全部签收', '发起作废'],
+  },
+  GOV06: {
+    flowIds: ['P07'], flowNode: 'obsolete-recall', primaryNext: 'GOV08', returnTarget: 'GOV01',
+    alternatePaths: [{ action: '回收未完成', target: 'GOV06', state: '回收中' }, { action: '回收证据缺失', target: 'GOV06', state: '阻断' }, { action: '取消作废', target: 'GOV01' }],
+    allowedActions: ['发起作废', '确认影响范围', '提交作废审批', '回收副本', '关闭处置'],
+  },
+  GOV08: {
+    flowIds: ['P07'], flowNode: 'archive', primaryNext: null, returnTarget: 'GOV06', terminal: true,
+    alternatePaths: [{ action: '签收未完成', target: 'GOV04-EXEC', state: '阻断' }, { action: '回收未完成', target: 'GOV06', state: '阻断' }, { action: '完整性不通过', target: 'GOV06' }],
+    allowedActions: ['完整性检查', '编目', '确认保存位置', '完成归档', '查看归档记录'],
+  },
+  GOV05: {
+    flowIds: ['P07'], flowNode: 'external-document-reference', primaryNext: 'GOV01', returnTarget: 'GOV05',
+    alternatePaths: [{ action: '外来文件更新', target: 'GOV02' }, { action: '适用性复核退回', target: 'GOV05' }],
+    allowedActions: ['登记外来文件', '核验来源与版本', '评估适用性', '关联受控文件', '发起修订申请'],
+  },
+  GOV07: {
+    flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'record-template-support', primaryNext: 'GOV01', returnTarget: 'GOV07',
+    alternatePaths: [{ action: '模板校验退回', target: 'GOV07' }, { action: '按模板创建受控文件', target: 'GOV02' }],
+    allowedActions: ['创建记录模板', '维护字段与版本', '预览模板', '提交校验', '查看受控引用'],
+  },
+  GOV09: {
+    flowIds: ['P07'], flowNode: 'record-retention', primaryNext: 'GOV08', returnTarget: 'GOV06',
+    alternatePaths: [{ action: '借阅申请退回', target: 'GOV09' }, { action: '销毁条件不完整', target: 'GOV06' }],
+    allowedActions: ['提交借阅申请', '登记归还', '申请延期', '发起销毁', '查看处置审计'],
+  },
+  GOV10: {
+    flowIds: ['P09'], flowNode: 'audit-plan', primaryNext: 'GOV11', returnTarget: 'GOV10',
+    alternatePaths: [{ action: '独立性校验不通过', target: 'GOV10' }],
+    allowedActions: ['创建计划', '分配审核组', '校验独立性', '批准发布', '调整计划'],
+  },
+  GOV11: {
+    flowIds: ['P09'], flowNode: 'audit-execution', primaryNext: 'GOV12', returnTarget: 'GOV10',
+    alternatePaths: [{ action: '补充客观证据', target: 'GOV11' }, { action: '无发现结案', target: 'GOV10' }],
+    allowedActions: ['启动审核', '执行检查表', '记录证据', '确认发现', '提交审核报告'],
+  },
+  GOV12: {
+    flowIds: ['P09'], flowNode: 'finding-capa', primaryNext: 'GOV13', returnTarget: 'GOV11',
+    alternatePaths: [{ action: '验证退回', target: 'GOV12' }, { action: '转质量事件', target: 'GOV15' }],
+    allowedActions: ['分配责任', '原因分析', '制定措施', '提交证据', '独立验证', '关闭发现'],
+  },
+  GOV13: {
+    flowIds: ['P10'], flowNode: 'management-review-plan', primaryNext: 'GOV14', returnTarget: 'GOV13',
+    alternatePaths: [{ action: '输入材料退回', target: 'GOV13' }],
+    allowedActions: ['创建评审计划', '分配输入责任人', '汇总材料', '发布议程', '调整计划'],
+  },
+  GOV14: {
+    flowIds: ['P10'], flowNode: 'management-review-action', primaryNext: null, returnTarget: 'GOV13', terminal: true,
+    alternatePaths: [{ action: '措施验证不通过', target: 'GOV14' }, { action: '转持续改进', target: 'GOV15' }, { action: '发起文件修订', target: 'GOV02' }],
+    allowedActions: ['核验输入', '记录决策', '分配措施', '跟踪执行', '确认有效性', '归档评审'],
+  },
+  GOV15: {
+    flowIds: ['P08', 'P10', 'P12'], flowNode: 'continuous-improvement', primaryNext: 'Q10', returnTarget: 'GOV15',
+    alternatePaths: [{ action: '验证不通过', target: 'GOV15' }, { action: '需要文件修订', target: 'GOV02' }, { action: '认可整改转入', target: 'ACC07' }],
+    allowedActions: ['登记质量事件', '分析根因', '制定改进措施', '提交验证证据', '关闭持续改进'],
+  },
+  ACC01: {
+    flowIds: ['P12'], flowNode: 'accreditation-project', primaryNext: 'ACC02', returnTarget: 'ACC01',
+    alternatePaths: [{ action: '暂停项目', target: 'ACC01' }],
+    allowedActions: ['创建项目', '确定评审类型', '维护里程碑', '查看项目详情', '归档项目'],
+  },
+  ACC02: {
+    flowIds: ['P12'], flowNode: 'scope-version', primaryNext: 'ACC04', returnTarget: 'ACC01',
+    alternatePaths: [{ action: '范围核验退回', target: 'ACC02' }],
+    allowedActions: ['编辑能力项', '技术核验', '版本对比', '提交范围版本', '查看签字人匹配'],
+  },
+  ACC03: {
+    flowIds: ['P12'], flowNode: 'authorized-signatory', primaryNext: 'ACC04', returnTarget: 'ACC02',
+    alternatePaths: [{ action: '授权条件不满足', target: 'ACC03' }, { action: '范围不匹配', target: 'ACC02' }],
+    allowedActions: ['维护签字人档案', '核验授权条件', '匹配认可范围', '提交授权审批', '查看授权历史'],
+  },
+  ACC04: {
+    flowIds: ['P12'], flowNode: 'clause-self-check', primaryNext: 'ACC05', returnTarget: 'ACC02',
+    alternatePaths: [{ action: '发现缺口', target: 'ACC07' }],
+    allowedActions: ['导入条款', '分配责任', '记录自查结论', '关联证据', '确认缺口'],
+  },
+  ACC05: {
+    flowIds: ['P12'], flowNode: 'evidence-package', primaryNext: 'ACC06', returnTarget: 'ACC04',
+    alternatePaths: [{ action: '完整性校验不通过', target: 'ACC05' }, { action: '证据失效', target: 'ACC04' }],
+    allowedActions: ['生成材料清单', '关联受控证据', '完整性核验', '内部批准', '打包提交'],
+  },
+  ACC06: {
+    flowIds: ['P12'], flowNode: 'assessment-preparation', primaryNext: 'ACC07', returnTarget: 'ACC05',
+    alternatePaths: [{ action: '迎审准备未完成', target: 'ACC06' }],
+    allowedActions: ['确认评审计划', '拆分任务', '分配责任', '检查准备度', '记录评审跟踪'],
+  },
+  ACC07: {
+    flowIds: ['P12'], flowNode: 'finding-remediation', primaryNext: 'ACC08', returnTarget: 'ACC06',
+    alternatePaths: [{ action: '内部验证退回', target: 'ACC07' }, { action: 'CNAS退回补充', target: 'ACC07' }, { action: '转质量事件', target: 'GOV15' }],
+    allowedActions: ['登记问题', '分析原因与影响', '制定整改', '提交内部验证', '提交证据', '补充证据', '关闭整改'],
+  },
+  ACC08: {
+    flowIds: ['P12'], flowNode: 'certificate-change', primaryNext: null, returnTarget: 'ACC01', terminal: true,
+    alternatePaths: [{ action: '证书或范围变更', target: 'ACC02' }],
+    allowedActions: ['登记证书', '核对范围附件', '发布有效信息', '确认影响范围', '更新归档'],
+  },
+  SYS01: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'organization-support', primaryNext: 'SYS02', returnTarget: 'SYS01', alternatePaths: [{ action: '组织关系冲突', target: 'SYS01' }], allowedActions: ['维护组织节点', '分配负责人', '核验组织关系', '提交生效'] },
+  SYS02: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'identity-support', primaryNext: null, returnTarget: 'SYS02', alternatePaths: [], allowedActions: ['维护用户', '停用账号', '触发权限复核'] },
+  SYS03: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'role-support', primaryNext: 'SYS04', returnTarget: 'SYS02', alternatePaths: [], allowedActions: ['维护角色', '配置职责分离', '评估成员影响'] },
+  SYS04: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'permission-support', primaryNext: 'SYS12', returnTarget: 'SYS03', alternatePaths: [{ action: '发现权限冲突', target: 'SYS03' }], allowedActions: ['配置流程权限', '配置数据范围', '校验冲突', '提交授权审批'] },
+  SYS05: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'audit-support', primaryNext: null, returnTarget: 'SYS05', alternatePaths: [], allowedActions: ['筛选审计记录', '查看前后值', '关联业务记录', '受控导出'] },
+  SYS06: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'session-security-support', primaryNext: 'SYS05', returnTarget: 'SYS02', alternatePaths: [{ action: '会话异常', target: 'SYS06' }], allowedActions: ['查看会话详情', '终止异常会话', '强制重新认证', '关联安全审计'] },
+  SYS07: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'workflow-config-support', primaryNext: 'SYS13', returnTarget: 'SYS07', alternatePaths: [{ action: '停用或回滚版本', target: 'SYS07' }], allowedActions: ['创建流程草稿', '查看流程版本', '测试流程', '审批发布', '回滚版本'] },
+  SYS08: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'numbering-support', primaryNext: 'SYS07', returnTarget: 'SYS08', alternatePaths: [{ action: '编号规则冲突', target: 'SYS08' }], allowedActions: ['创建编号规则', '配置编码段', '模拟编号', '提交规则校验'] },
+  SYS09: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'template-support', primaryNext: 'SYS14', returnTarget: 'SYS09', alternatePaths: [{ action: '模板校验不通过', target: 'SYS14' }], allowedActions: ['创建模板', '维护版本', '查看引用关系', '提交发布'] },
+  SYS10: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'notification-support', primaryNext: null, returnTarget: 'SYS10', alternatePaths: [{ action: '发送失败', target: 'SYS10' }], allowedActions: ['配置节点通知', '配置催办升级', '测试发送', '启用策略'] },
+  SYS11: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'data-dictionary-support', primaryNext: 'SYS09', returnTarget: 'SYS11', alternatePaths: [{ action: '编码重复', target: 'SYS11' }], allowedActions: ['维护字典项', '校验引用范围', '提交字典变更', '查看变更审计'] },
+  SYS12: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'authorization-support', primaryNext: null, returnTarget: 'SYS04', alternatePaths: [{ action: '职责冲突', target: 'SYS04' }], allowedActions: ['分配角色', '设置数据范围', '校验冲突', '审批授权'] },
+  SYS13: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'workflow-design-support', primaryNext: 'SYS07', returnTarget: 'SYS07', alternatePaths: [{ action: '结构校验不通过', target: 'SYS13' }], allowedActions: ['编排节点', '配置分支', '配置时限', '结构校验', '提交发布'] },
+  SYS14: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'template-preview-support', primaryNext: 'SYS09', returnTarget: 'SYS09', alternatePaths: [{ action: '预览校验不通过', target: 'SYS14' }], allowedActions: ['编辑版式', '绑定数据项', '生成预览', '提交校验'] },
+  SYS15: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'integration-monitor-support', primaryNext: 'SYS16', returnTarget: 'SYS15', alternatePaths: [{ action: '接口异常', target: 'SYS16' }], allowedActions: ['查看接口趋势', '筛选失败批次', '确认告警', '查看失败详情'] },
+  SYS16: { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'integration-retry-support', primaryNext: 'SYS15', returnTarget: 'SYS15', alternatePaths: [{ action: '重试失败', target: 'SYS16' }], allowedActions: ['查看失败详情', '查看脱敏报文', '发起幂等重试', '关联审计记录'] },
+  'GOV05-CREATE': { flowIds: ['P07'], flowNode: 'external-document-create', primaryNext: 'GOV05', returnTarget: 'GOV05', alternatePaths: [{ action: '保存草稿或资料缺失', target: 'GOV05-CREATE' }], allowedActions: ['保存草稿', '提交登记', '返回外来文件列表'] },
+  'GOV07-CREATE': { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'record-template-create', primaryNext: 'GOV07', returnTarget: 'GOV07', alternatePaths: [{ action: '模板校验未通过', target: 'GOV07-CREATE' }], allowedActions: ['保存模板草稿', '预览模板', '提交校验', '返回模板清单'] },
+  'GOV10-CREATE': { flowIds: ['P09'], flowNode: 'audit-plan-create', primaryNext: 'GOV10', returnTarget: 'GOV10', alternatePaths: [{ action: '独立性或范围校验未通过', target: 'GOV10-CREATE' }], allowedActions: ['保存计划草稿', '校验审核独立性', '提交计划审批', '返回审核计划'] },
+  'GOV13-CREATE': { flowIds: ['P10'], flowNode: 'management-review-plan-create', primaryNext: 'GOV13', returnTarget: 'GOV13', alternatePaths: [{ action: '评审输入不完整', target: 'GOV13-CREATE' }], allowedActions: ['保存评审草稿', '汇总输入材料', '发布评审议程', '返回评审计划'] },
+  'ACC01-CREATE': { flowIds: ['P12'], flowNode: 'accreditation-project-create', primaryNext: 'ACC01', returnTarget: 'ACC01', alternatePaths: [{ action: '范围或负责人信息不完整', target: 'ACC01-CREATE' }], allowedActions: ['保存项目草稿', '提交项目登记', '返回项目台账'] },
+  'ACC03-EDIT': { flowIds: ['P12'], flowNode: 'authorized-signatory-edit', primaryNext: 'ACC03', returnTarget: 'ACC03', alternatePaths: [{ action: '授权条件不满足', target: 'ACC03-EDIT' }], allowedActions: ['保存授权草稿', '核验能力证据', '提交授权审批', '返回签字人管理'] },
+  'SYS01-EDIT': { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'organization-edit', primaryNext: 'SYS01', returnTarget: 'SYS01', alternatePaths: [{ action: '组织关系校验失败', target: 'SYS01-EDIT' }], allowedActions: ['保存组织草稿', '核验组织影响', '提交组织生效', '返回组织管理'] },
+  'SYS02-EDIT': { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'identity-edit', primaryNext: 'SYS02', returnTarget: 'SYS02', alternatePaths: [{ action: '身份或任职信息不完整', target: 'SYS02-EDIT' }], allowedActions: ['保存用户草稿', '核验任职关系', '提交用户生效', '返回用户管理'] },
+  'SYS03-EDIT': { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'role-edit', primaryNext: 'SYS03', returnTarget: 'SYS03', alternatePaths: [{ action: '职责分离校验失败', target: 'SYS03-EDIT' }], allowedActions: ['保存角色草稿', '校验职责分离', '提交角色启用', '返回角色管理'] },
+  'SYS04-EDIT': { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'permission-edit', primaryNext: 'SYS04', returnTarget: 'SYS04', alternatePaths: [{ action: '权限冲突或范围缺失', target: 'SYS04-EDIT' }], allowedActions: ['保存权限草稿', '校验权限冲突', '提交授权审批', '返回权限管理'] },
+  'SYS08-CREATE': { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'numbering-rule-create', primaryNext: 'SYS08', returnTarget: 'SYS08', alternatePaths: [{ action: '编号冲突或预览失败', target: 'SYS08-CREATE' }], allowedActions: ['保存规则草稿', '模拟编号', '提交规则校验', '返回编号规则'] },
+  'SYS11-EDIT': { flowIds: ['P07', 'P09', 'P10', 'P12'], flowNode: 'data-dictionary-edit', primaryNext: 'SYS11', returnTarget: 'SYS11', alternatePaths: [{ action: '编码重复或存在受控引用', target: 'SYS11-EDIT' }], allowedActions: ['保存字典草稿', '校验引用范围', '提交字典变更', '返回数据字典'] },
+};
+
+const actionPageTargets = {
+  GOV01: { '发起修订': 'GOV02', '发起作废': 'GOV06' },
+  GOV04: { '跟踪签收': 'GOV04-EXEC', '催办未签收人员': 'GOV04-EXEC', '确认执行': 'GOV04-EXEC' },
+  'GOV04-EXEC': { '发起作废': 'GOV06' },
+  GOV05: { '登记外来文件': 'GOV05-CREATE', '发起修订申请': 'GOV02' },
+  GOV07: { '创建记录模板': 'GOV07-CREATE' },
+  GOV10: { '创建计划': 'GOV10-CREATE' },
+  GOV11: { '确认发现': 'GOV12' },
+  GOV13: { '创建评审计划': 'GOV13-CREATE' },
+  ACC01: { '创建项目': 'ACC01-CREATE' },
+  ACC02: { '查看签字人匹配': 'ACC03' },
+  ACC03: { '维护签字人档案': 'ACC03-EDIT' },
+  ACC04: { '确认缺口': 'ACC07' },
+  SYS01: { '维护组织节点': 'SYS01-EDIT' },
+  SYS02: { '维护用户': 'SYS02-EDIT' },
+  SYS03: { '维护角色': 'SYS03-EDIT' },
+  SYS04: { '配置流程权限': 'SYS04-EDIT', '配置数据范围': 'SYS04-EDIT' },
+  SYS06: { '关联安全审计': 'SYS05' },
+  SYS07: { '创建流程草稿': 'SYS13' },
+  SYS08: { '创建编号规则': 'SYS08-CREATE' },
+  SYS09: { '创建模板': 'SYS14' },
+  SYS11: { '维护字典项': 'SYS11-EDIT' },
+  SYS15: { '查看失败详情': 'SYS16' },
+  SYS16: { '关联审计记录': 'SYS05' },
+};
+
+const flowAnchorByTarget = {
+  'GOV04-EXEC': 'GOV04-EXEC',
+  'GOV05-CREATE': 'GOV05',
+  'GOV07-CREATE': 'GOV07',
+  'GOV10-CREATE': 'GOV10',
+  'GOV13-CREATE': 'GOV13',
+  'ACC01-CREATE': 'ACC01',
+  'ACC03-EDIT': 'ACC03',
+  'SYS01-EDIT': 'SYS01',
+  'SYS02-EDIT': 'SYS02',
+  'SYS03-EDIT': 'SYS03',
+  'SYS04-EDIT': 'SYS04',
+  'SYS08-CREATE': 'SYS08',
+  'SYS11-EDIT': 'SYS11',
+};
+
+const drawerActionPattern = /查看|预览|对比|跟踪|核对|审计|历史|引用|趋势|报文|详情/;
+const modalActionPattern = /申请|提交|批准|发布|作废|停用|终止|强制|撤回|关闭|归档|启用|回滚|确认全部|打包|重试/;
+
+const actionSurface = (page, label) => {
+  if (actionPageTargets[page.id]?.[label]) return 'page';
+  if (drawerActionPattern.test(label)) return 'drawer';
+  if (modalActionPattern.test(label)) return 'modal';
+  return 'inline';
+};
+
+const actionPlacement = (label, surface) => {
+  if (/创建|登记|新增/.test(label) && surface === 'page') return 'toolbar';
+  if (surface === 'drawer') return 'row';
+  if (surface === 'modal') return 'workflowFooter';
+  return 'primaryArea';
+};
+
+const actionContractOverrides = {
+  'GOV08.完成归档': {
+    controlState: 'disabled',
+    enabledWhen: '签收执行完成 && 回收完成 && 完整性检查通过',
+    disabledReason: '签收或回收未完成，不能归档',
+  },
+};
+
+const actionContractsForPage = (page) => (page.allowedActions || []).map((label, index) => {
+  const surface = actionSurface(page, label);
+  const targetPageId = actionPageTargets[page.id]?.[label];
+  const actionId = `${page.id}.${label}`;
+  const contract = {
+    actionId,
+    label,
+    placement: actionPlacement(label, surface),
+    surface,
+    returnTarget: page.id,
+    flowAnchorPageId: targetPageId ? (flowAnchorByTarget[targetPageId] || targetPageId) : (page.flowAnchorPageId || page.id),
+    visibleWhen: `当前用户具备“${label}”权限且业务对象处于允许操作的状态`,
+  };
+  const override = actionContractOverrides[actionId] || {};
+  if (surface === 'page') return { ...contract, targetPageId, ...override };
+  if (surface === 'drawer' || surface === 'modal') {
+    return { ...contract, variantFrameId: `${page.id}-${String(index + 1).padStart(2, '0')}-${surface.toUpperCase()}`, ...override };
+  }
+  return { ...contract, effect: `执行“${label}”并刷新当前页面的状态、校验结果与审计时间线`, ...override };
+});
+
+const governanceFlowDefinitions = [
+  { flowId: 'P07', title: '文件修订到作废归档', nodes: ['GOV01', 'GOV02', 'GOV03', 'GOV04', 'GOV04-EXEC', 'GOV06', 'GOV08'], steps: ['文件详情', '修订申请', '审核与批准', '发布与分发', '签收执行', '作废与回收', '归档'] },
+  { flowId: 'P09', title: '内审到整改验证', nodes: ['GOV10', 'GOV11', 'GOV12'], steps: ['内部审核计划', '内部审核执行', '审核发现与整改'] },
+  { flowId: 'P10', title: '管理评审到改进闭环', nodes: ['GOV13', 'GOV14', 'GOV15'], steps: ['管理评审计划', '管理评审执行与措施', '质量事件与持续改进'] },
+  { flowId: 'P12', title: 'CNAS 评审问题到整改完成', nodes: ['ACC01', 'ACC02', 'ACC04', 'ACC05', 'ACC06', 'ACC07', 'ACC08'], steps: ['认可项目', '认可范围', '条款自查', '申请材料与证据包', '评审计划与迎审任务', '评审问题整改', '证书与范围归档'] },
+];
+
+const supportFlowAnchors = {
+  GOV05: { P07: 'GOV01' },
+  GOV07: { P07: 'GOV01', P09: 'GOV10', P10: 'GOV13', P12: 'ACC01' },
+  GOV09: { P07: 'GOV08' },
+  ACC03: { P12: 'ACC02' },
+  'ACC03-EDIT': { P12: 'ACC02' },
+  GOV15: { P12: 'ACC07' },
+};
+
+const flowContextForPage = (page) => {
+  const definitions = governanceFlowDefinitions.filter((definition) => page.flowIds?.includes(definition.flowId));
+  const contexts = definitions.map((definition) => {
+    const explicitAnchor = supportFlowAnchors[page.id]?.[definition.flowId];
+    const hiddenAnchor = flowAnchorByTarget[page.id];
+    const anchorPageId = definition.nodes.includes(page.id) ? page.id : (explicitAnchor || hiddenAnchor || definition.nodes[0]);
+    const nodeIndex = Math.max(1, definition.nodes.indexOf(anchorPageId) + 1);
+    const isFlowNode = definition.nodes.includes(page.id);
+    const isTerminal = isFlowNode && nodeIndex === definition.nodes.length;
+    const blockedPath = page.alternatePaths?.find((path) => path.state === '阻断' || path.target === page.id)
+      || page.alternatePaths?.[0];
+    return {
+      flowId: definition.flowId,
+      flowTitle: definition.title,
+      steps: definition.steps,
+      nodeIndex,
+      nodeState: page.terminal || isTerminal ? 'terminal' : 'current',
+      normalNext: isFlowNode ? (definition.nodes[nodeIndex] || null) : page.primaryNext,
+      returnTarget: page.returnTarget,
+      blockedTarget: blockedPath?.target || page.returnTarget,
+    };
+  });
+  const [primaryContext] = contexts;
+  return {
+    primaryFlowId: primaryContext?.flowId || page.flowIds?.[0],
+    flowContexts: contexts,
+    flowContext: primaryContext ? {
+      flowId: primaryContext.flowId,
+      flowTitle: primaryContext.flowTitle,
+      nodeIndex: primaryContext.nodeIndex,
+      nodeCount: primaryContext.steps.length,
+      nodeState: primaryContext.nodeState,
+      terminal: primaryContext.nodeState === 'terminal',
+      primaryNext: primaryContext.normalNext,
+      returnTarget: primaryContext.returnTarget,
+      blockedTarget: primaryContext.blockedTarget,
+    } : undefined,
+  };
+};
+
+const withRenderFamilies = (pages) => pages.map((item) => {
+  const page = {
+    ...item,
+    ...flowPageMetadata[item.id],
+    ...(renderFamilies[item.id] ? { renderFamily: renderFamilies[item.id] } : {}),
+  };
+  const flowMetadata = flowContextForPage(page);
+  const baseProfile = interactionProfilesById[page.id]
+    || interactionProfilesByFamily[page.renderFamily]
+    || interactionProfilesByKind[page.kind]
+    || createInteractionProfile();
+  const primaryContext = flowMetadata.flowContexts[0];
+  const interactionProfile = primaryContext ? {
+    ...baseProfile,
+    flow: {
+      ...baseProfile.flow,
+      pending: primaryContext.nodeState === 'terminal'
+        ? '当前节点为流程终态；如需继续，请受控发起新版本或新申请'
+        : baseProfile.flow.pending,
+    },
+  } : baseProfile;
+  return {
+    ...page,
+    ...flowMetadata,
+    actionContracts: actionContractsForPage(page),
+    interactionProfile,
+  };
+});
 
 export const governanceDomains = [
   {
@@ -104,6 +666,22 @@ export const governanceDomains = [
         requirement: '发布新版本时自动识别受影响岗位，并记录分发、阅读和签收证据',
       },
       {
+        id: 'GOV04-EXEC',
+        title: '文件签收与执行',
+        role: '部门负责人 / 文件使用人员 / 文件管理员',
+        kind: 'workflow',
+        goal: '跟踪受控文件分发、签收、执行证据与未完成催办',
+        fields: ['文件编号', '发布版本', '分发对象', '签收状态', '签收时间', '执行证据', '催办状态'],
+        menu: '文件管理',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'GOV04-EXEC',
+        entry: '从文件发布与分发的“跟踪签收”或“确认执行”进入',
+        back: '返回文件发布与分发，并保留分发与签收筛选条件',
+        flow: '核对分发对象 → 跟踪签收 → 补充执行证据 → 催办未签收人员 → 确认全部签收',
+        requirement: '签收未完成或执行证据缺失时停留当前节点并阻断作废归档，签名实现与通知协议显示为[待确认]',
+      },
+      {
         id: 'GOV05',
         title: '外来文件管理',
         role: '文件管理员 / 技术负责人',
@@ -116,6 +694,22 @@ export const governanceDomains = [
         back: '返回受控文件库',
         flow: '登记来源 → 有效性确认 → 指定适用范围 → 定期查新 → 更新或停用',
         requirement: '支持来源核验、查新提醒、替代关系和失效文件影响分析',
+      },
+      {
+        id: 'GOV05-CREATE',
+        title: '新增外来文件',
+        role: '文件管理员 / 技术负责人',
+        kind: 'form',
+        goal: '登记外来文件来源、版本、适用范围与首次有效性核验信息',
+        fields: ['外来文件编号', '文件名称', '来源机构', '文件版本', '发布日期', '适用范围', '有效性依据'],
+        menu: '文件管理',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'GOV05',
+        entry: '从外来文件管理的“登记外来文件”进入',
+        back: '返回外来文件管理，并保留来源与有效状态筛选条件',
+        flow: '填写来源信息 → 核验来源与版本 → 评估适用性 → 关联受控文件 → 提交登记',
+        requirement: '来源、版本和适用性证据缺失时允许保存草稿但不得完成登记',
       },
       {
         id: 'GOV06',
@@ -144,6 +738,22 @@ export const governanceDomains = [
         back: '返回记录档案首页',
         flow: '登记记录类型 → 关联模板 → 设置责任与期限 → 审批发布 → 到期复核',
         requirement: '记录模板引用受控文件版本，保存期限与归档规则必须可审计',
+      },
+      {
+        id: 'GOV07-CREATE',
+        title: '新增记录模板',
+        role: '文件管理员 / 记录责任人',
+        kind: 'form',
+        goal: '创建记录模板草稿并配置字段、责任、保存期限与归档规则',
+        fields: ['模板编号', '记录名称', '字段清单', '责任部门', '载体形式', '保存期限', '归档规则'],
+        menu: '档案管理',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'GOV07',
+        entry: '从记录模板与清单的“创建记录模板”进入',
+        back: '返回记录模板与清单，并保留模板类型筛选条件',
+        flow: '填写模板信息 → 维护字段与版本 → 设置责任和期限 → 预览模板 → 提交校验',
+        requirement: '保存期限、审批层级和外部接口规则未确认时保留[待确认]标记，不虚构业务值',
       },
       {
         id: 'GOV08',
@@ -188,6 +798,22 @@ export const governanceDomains = [
         requirement: '计划覆盖体系要素和活动场所，并校验审核员不得审核本人承担的工作',
       },
       {
+        id: 'GOV10-CREATE',
+        title: '新增内部审核计划',
+        role: '内审负责人 / 质量负责人',
+        kind: 'schedule',
+        goal: '创建内部审核计划草稿并完成范围、依据、审核组与独立性校验',
+        fields: ['计划编号', '审核范围', '审核依据', '计划日期', '审核组长', '审核成员', '独立性结果'],
+        menu: '内部审核',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'GOV10',
+        entry: '从内部审核计划的“创建计划”进入',
+        back: '返回内部审核计划，并保留年度与状态筛选条件',
+        flow: '填写年度方案 → 确定范围与依据 → 分配审核组 → 校验独立性 → 提交计划审批',
+        requirement: '审核范围、审核依据或独立性校验不通过时不得提交审批',
+      },
+      {
         id: 'GOV11',
         title: '内部审核执行',
         role: '内审组长 / 内审员',
@@ -228,6 +854,22 @@ export const governanceDomains = [
         back: '返回管理评审首页',
         flow: '创建计划 → 配置输入主题 → 分配材料责任人 → 汇总材料 → 发布议程',
         requirement: '输入范围覆盖内外部变化、目标绩效、审核结果、客户反馈、资源和改进机会',
+      },
+      {
+        id: 'GOV13-CREATE',
+        title: '新增管理评审计划',
+        role: '质量负责人 / 最高管理者',
+        kind: 'schedule',
+        goal: '创建管理评审计划草稿并配置评审输入、材料责任与会议议程',
+        fields: ['评审编号', '评审周期', '会议日期', '输入主题', '材料责任人', '材料截止日', '参会职责'],
+        menu: '管理评审',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'GOV13',
+        entry: '从管理评审计划的“创建评审计划”进入',
+        back: '返回管理评审计划，并保留周期与准备状态筛选条件',
+        flow: '填写评审计划 → 配置输入主题 → 分配材料责任人 → 汇总输入材料 → 发布评审议程',
+        requirement: '评审输入、责任人或截止日期缺失时保存草稿并阻断议程发布',
       },
       {
         id: 'GOV14',
@@ -278,6 +920,22 @@ export const governanceDomains = [
         requirement: '按项目沉淀范围版本、申请材料、沟通记录、评审问题和证书结果',
       },
       {
+        id: 'ACC01-CREATE',
+        title: '新增认可项目',
+        role: '认可管理员 / 质量负责人',
+        kind: 'form',
+        goal: '创建认可项目草稿并确定评审类型、申请范围、负责人和里程碑',
+        fields: ['项目编号', '评审类型', '认可机构', '申请范围', '项目负责人', '申请日期', '计划里程碑'],
+        menu: '评审管理',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'ACC01',
+        entry: '从认可项目台账的“创建项目”进入',
+        back: '返回认可项目台账，并保留评审类型与项目状态筛选条件',
+        flow: '填写项目信息 → 确定评审类型 → 配置申请范围 → 分配项目负责人 → 提交项目登记',
+        requirement: '项目类型、申请范围或负责人缺失时仅可保存草稿，不得提交登记',
+      },
+      {
         id: 'ACC02',
         title: '认可范围管理',
         role: '认可管理员 / 技术负责人',
@@ -304,6 +962,22 @@ export const governanceDomains = [
         back: '返回认可范围管理',
         flow: '选择人员 → 核验能力与任命 → 配置签字范围 → 审批生效 → 到期复评',
         requirement: '报告签发前可按范围版本、场所和有效期实时校验签字授权',
+      },
+      {
+        id: 'ACC03-EDIT',
+        title: '编辑授权签字人档案',
+        role: '认可管理员 / 技术负责人',
+        kind: 'form',
+        goal: '维护授权签字人的能力证据、场所、认可范围、报告类型与有效期',
+        fields: ['签字人', '能力证据', '任命依据', '授权场所', '授权范围', '报告类型', '授权有效期'],
+        menu: '授权签字人',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'ACC03',
+        entry: '从授权签字人管理的“维护签字人档案”进入',
+        back: '返回授权签字人管理，并保留人员与授权状态筛选条件',
+        flow: '选择人员 → 核验能力证据 → 配置签字范围 → 校验范围匹配 → 提交授权审批',
+        requirement: '能力证据、任命依据或范围匹配不满足时保留退回原因并阻断授权生效',
       },
       {
         id: 'ACC04',
@@ -396,6 +1070,22 @@ export const governanceDomains = [
         requirement: '组织调整保留历史隶属关系，并校验关联用户、岗位和数据范围',
       },
       {
+        id: 'SYS01-EDIT',
+        title: '编辑组织节点',
+        role: '系统管理员 / 组织管理员',
+        kind: 'form',
+        goal: '新增或调整组织节点、层级、负责人、生效日期与关联岗位',
+        fields: ['组织编码', '组织名称', '组织类型', '上级组织', '负责人', '关联岗位', '生效日期'],
+        menu: '组织管理',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'SYS01',
+        entry: '从组织管理的“维护组织节点”进入',
+        back: '返回组织管理，并保留当前组织树展开位置',
+        flow: '选择组织节点 → 编辑层级与负责人 → 核对岗位权限 → 校验影响 → 提交组织生效',
+        requirement: '组织关系存在循环、孤立节点或未确认权限影响时不得提交生效',
+      },
+      {
         id: 'SYS02',
         title: '用户管理',
         role: '系统管理员 / 用户管理员',
@@ -408,6 +1098,22 @@ export const governanceDomains = [
         back: '返回组织管理或用户列表',
         flow: '创建或同步用户 → 关联组织岗位 → 分配角色 → 启用账号 → 定期复核',
         requirement: '离职、调岗和到期账号及时停用，身份变化同步触发权限复核',
+      },
+      {
+        id: 'SYS02-EDIT',
+        title: '新增与编辑用户',
+        role: '系统管理员 / 用户管理员',
+        kind: 'form',
+        goal: '维护用户身份、任职关系、联系方式、账号状态和有效期',
+        fields: ['用户账号', '姓名', '所属组织', '岗位', '联系方式', '有效期', '账号状态'],
+        menu: '用户管理',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'SYS02',
+        entry: '从用户管理的“维护用户”进入',
+        back: '返回用户管理，并保留组织、岗位和状态筛选条件',
+        flow: '填写身份信息 → 关联组织岗位 → 核验任职关系 → 配置有效期 → 提交用户生效',
+        requirement: '用户身份或任职关系不完整时允许保存草稿但不得启用账号',
       },
       {
         id: 'SYS03',
@@ -424,6 +1130,22 @@ export const governanceDomains = [
         requirement: '角色变更版本化并评估成员影响，敏感角色分配需要复核',
       },
       {
+        id: 'SYS03-EDIT',
+        title: '新增与编辑角色',
+        role: '系统管理员 / 权限管理员',
+        kind: 'form',
+        goal: '维护角色职责范围、适用组织、关联权限、互斥规则与成员影响',
+        fields: ['角色编码', '角色名称', '角色类型', '适用组织', '职责范围', '互斥角色', '成员影响'],
+        menu: '角色管理',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'SYS03',
+        entry: '从角色管理的“维护角色”进入',
+        back: '返回角色管理，并保留角色类型与状态筛选条件',
+        flow: '填写角色信息 → 配置职责范围 → 关联权限 → 校验职责分离 → 提交角色启用',
+        requirement: '职责分离冲突或成员影响未确认时保持阻断并保留冲突明细',
+      },
+      {
         id: 'SYS04',
         title: '权限管理',
         role: '系统管理员 / 权限管理员 / 审计人员',
@@ -436,6 +1158,22 @@ export const governanceDomains = [
         back: '返回角色管理或权限矩阵',
         flow: '选择角色或用户 → 配置权限 → 冲突校验 → 审批生效 → 周期复核',
         requirement: '遵循最小权限和职责分离原则，临时授权具备期限、原因和审批记录',
+      },
+      {
+        id: 'SYS04-EDIT',
+        title: '编辑权限范围',
+        role: '系统管理员 / 权限管理员 / 审计人员',
+        kind: 'permission',
+        goal: '配置功能、按钮、数据和流程权限并完成职责分离与范围冲突校验',
+        fields: ['授权对象', '功能权限', '按钮权限', '数据范围', '流程权限', '授权原因', '有效期'],
+        menu: '权限管理',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'SYS04',
+        entry: '从权限管理的“配置流程权限”或“配置数据范围”进入',
+        back: '返回权限管理，并保留授权对象与权限类型筛选条件',
+        flow: '选择授权对象 → 配置权限范围 → 校验职责冲突 → 确认授权原因与期限 → 提交授权审批',
+        requirement: '权限冲突、范围缺失或临时授权期限未确认时不得提交审批',
       },
       {
         id: 'SYS05',
@@ -494,6 +1232,22 @@ export const governanceDomains = [
         requirement: '已生成编号保持唯一且不可重用，规则变更从明确生效时间开始',
       },
       {
+        id: 'SYS08-CREATE',
+        title: '新增编号规则',
+        role: '配置管理员 / 系统管理员',
+        kind: 'form',
+        goal: '创建编号规则草稿并配置编码段、序列周期、适用组织和生效时间',
+        fields: ['规则编码', '业务对象', '编号组成', '序列周期', '适用组织', '生效时间', '模拟结果'],
+        menu: '编号规则',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'SYS08',
+        entry: '从编号规则的“创建编号规则”进入',
+        back: '返回编号规则，并保留业务对象与规则状态筛选条件',
+        flow: '选择业务对象 → 配置编码段 → 设置序列周期 → 模拟编号并校验冲突 → 提交规则校验',
+        requirement: '模拟编号冲突、组成项缺失或生效时间不明确时不得提交规则校验',
+      },
+      {
         id: 'SYS09',
         title: '模板管理',
         role: '模板管理员 / 业务负责人',
@@ -534,6 +1288,22 @@ export const governanceDomains = [
         back: '返回系统管理首页',
         flow: '选择字典 → 新增或调整字典项 → 引用检查 → 审批发布 → 停用旧值',
         requirement: '已被业务引用的字典项不得删除，停用后仍可正确展示历史数据',
+      },
+      {
+        id: 'SYS11-EDIT',
+        title: '新增与编辑字典项',
+        role: '数据管理员 / 系统管理员',
+        kind: 'form',
+        goal: '维护字典项编码、显示名称、排序、适用范围与生效状态',
+        fields: ['字典编码', '字典项编码', '显示名称', '排序', '适用范围', '生效日期', '字典状态'],
+        menu: '数据字典',
+        pageType: '操作页',
+        hidden: true,
+        flowAnchorPageId: 'SYS11',
+        entry: '从数据字典的“维护字典项”进入',
+        back: '返回数据字典，并保留当前字典与状态筛选条件',
+        flow: '选择字典 → 编辑字典项 → 校验编码唯一性 → 检查受控引用 → 提交字典变更',
+        requirement: '编码重复或存在不可兼容引用时保留阻断原因，已引用字典项不得删除',
       },
       {
         id: 'SYS12',

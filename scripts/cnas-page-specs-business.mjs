@@ -869,3 +869,1210 @@ export const businessDomains = [
     ],
   },
 ];
+
+const testingDomain = businessDomains.find((domain) => domain.basename === 'cnas-04-testing-management');
+testingDomain.pages.push({
+  id: 'TM01-CREATE',
+  title: '新增检测任务',
+  role: '任务管理员、技术负责人',
+  kind: 'form',
+  renderFamily: 'workflow',
+  goal: '从已受理委托和已接收样品建立受控检测任务，并完成首次排程交接',
+  fields: ['委托编号', '样品编号', '检测项目', '方法版本', '计划时间', '执行人员', '候选设备', '质量控制要求', '任务说明', '附件'],
+  menu: '任务管理',
+  pageType: '操作页',
+  entry: '从检测任务列表点击新增进入',
+  back: '返回检测任务列表并保留筛选条件',
+  flow: ['选择已受理委托和可用样品', '核对检测项目、方法版本和质量控制要求', '填写计划时间与任务说明', '选择具备有效授权的执行人员和设备', '保存草稿或提交排程', '返回任务列表确认新任务编号与状态'],
+  requirement: '任务创建必须引用有效委托、样品、方法和授权资源；保存、提交与退回均须保留版本和审计记录',
+  hidden: true,
+  sourcePageId: 'TM01',
+  actionId: 'TM01.create',
+});
+
+export const businessFlowCatalog = [
+  {
+    id: 'WB',
+    title: '工作台路由与待办处置',
+    module: '工作台',
+    boardName: 'Flow Overview / WB / 工作台路由与待办处置',
+    primaryPath: ['WB01', 'WB02', 'WB03', 'WB04', 'WB02'],
+    branches: [
+      { from: 'WB02', when: '按业务指标下钻', to: 'CC03' },
+      { from: 'WB02', when: '按样品指标下钻', to: 'SM04' },
+      { from: 'WB02', when: '按任务指标下钻', to: 'TM01' },
+      { from: 'WB02', when: '按报告指标下钻', to: 'RM01' },
+      { from: 'WB03', when: '处理预警或通知', to: 'WB05' },
+    ],
+  },
+  {
+    id: 'P01',
+    title: '客户与委托受理',
+    module: '客户与委托',
+    boardName: 'Flow Overview / P01 / 客户与委托受理',
+    responsibleRoles: '客户服务人员、合同评审人、技术负责人、样品管理员与任务管理员',
+    entryPages: ['CC01', 'CC03'],
+    detailPages: ['CC02', 'CC05'],
+    editPages: ['CC02', 'CC04', 'CC06'],
+    approvalPages: ['CC06', 'CC07', 'CC08'],
+    terminal: 'TM01',
+    handoffs: [{ from: 'CC05', to: 'SM01', purpose: '已受理委托转入样品接收' }, { from: 'SM01', to: 'TM01', purpose: '样品接收完成后进入任务受理' }],
+    primaryPath: ['CC01', 'CC02', 'CC04', 'CC06', 'CC07', 'CC05', 'SM01'],
+    branches: [
+      { from: 'CC07', when: '评审退回或要求补充', to: 'CC04' },
+      { from: 'CC05', when: '客户要求发生变化', to: 'CC08' },
+      { from: 'CC09', when: '沟通影响履约要求', to: 'CC08' },
+    ],
+  },
+  {
+    id: 'P02',
+    title: '样品生命周期',
+    module: '样品管理',
+    boardName: 'Flow Overview / P02 / 样品生命周期',
+    responsibleRoles: '样品管理员、检测员、质量负责人、档案管理员',
+    entryPages: ['SM01', 'SM04'],
+    detailPages: ['SM05'],
+    editPages: ['SM02', 'SM06', 'SM07', 'SM08', 'SM09', 'SM10', 'SM11', 'SM12'],
+    approvalPages: ['SM03', 'SM12'],
+    terminal: 'SM12',
+    handoffs: [{ from: 'SM10', to: 'TM01', purpose: '样品领用完成后允许任务开工' }, { from: 'TM14', to: 'RM07', purpose: '检测完成后确认留样或处置要求' }],
+    primaryPath: ['SM01', 'SM02', 'SM04', 'SM06', 'SM07', 'SM08', 'SM10', 'SM11', 'SM12'],
+    branches: [
+      { from: 'SM02', when: '接收条件不满足', to: 'SM03' },
+      { from: 'SM03', when: '有条件接收或补充证据完成', to: 'SM02' },
+      { from: 'SM10', when: '检测结束归还', to: 'SM09' },
+      { from: 'SM11', when: '留样需要延期', to: 'SM09' },
+    ],
+  },
+  {
+    id: 'P03',
+    title: '检测执行与结果放行',
+    module: '检测管理',
+    boardName: 'Flow Overview / P03 / 检测执行与结果放行',
+    responsibleRoles: '任务管理员、检测员、技术负责人、复核人、质量控制人员',
+    entryPages: ['TM01'],
+    detailPages: ['TM03', 'TM11'],
+    editPages: ['TM02', 'TM04', 'TM05', 'TM06', 'TM07', 'TM08'],
+    approvalPages: ['TM10', 'TM12', 'TM13', 'TM14'],
+    terminal: 'RM01',
+    handoffs: [{ from: 'TM14', to: 'RM01', purpose: '任务完成和结果放行后进入报告编制队列' }],
+    primaryPath: ['TM01', 'TM02', 'TM03', 'TM04', 'TM05', 'TM07', 'TM08', 'TM11', 'TM13', 'TM12', 'TM14', 'RM01'],
+    branches: [
+      { from: 'TM05', when: '导入仪器原始文件', to: 'TM06' },
+      { from: 'TM05', when: '发现偏离或异常', to: 'TM09' },
+      { from: 'TM09', when: '满足恢复条件', to: 'TM05' },
+      { from: 'TM09', when: '需要复检或重测', to: 'TM10' },
+      { from: 'TM10', when: '批准重测并生成关联任务', to: 'TM02' },
+      { from: 'TM12', when: '复核退回补充', to: 'TM11' },
+    ],
+  },
+  {
+    id: 'P04',
+    title: '报告编制、发布与归档',
+    module: '报告管理',
+    boardName: 'Flow Overview / P04 / 报告编制、发布与归档',
+    responsibleRoles: '报告编制人、报告审核人、授权签字人、交付人员与档案管理员',
+    entryPages: ['RM01'],
+    detailPages: ['RM08'],
+    editPages: ['RM02', 'RM03', 'RM09', 'RM10'],
+    approvalPages: ['RM04', 'RM05', 'RM06'],
+    terminal: 'RM11',
+    handoffs: [{ from: 'TM14', to: 'RM01', purpose: '已完成检测任务交接报告编制' }, { from: 'RM07', to: 'SM11', purpose: '报告发布后交接留样期限管理' }, { from: 'RM08', to: 'RM11', purpose: '有效报告转入受控归档与调阅' }],
+    primaryPath: ['RM01', 'RM02', 'RM03', 'RM04', 'RM06', 'RM05', 'RM07', 'RM08', 'RM11'],
+    branches: [
+      { from: 'RM03', when: '完整性检查未通过', to: 'RM02' },
+      { from: 'RM04', when: '审核退回补充', to: 'RM02' },
+      { from: 'RM05', when: '签发退回补充', to: 'RM02' },
+      { from: 'RM07', when: '送达失败需要重试', to: 'RM07' },
+      { from: 'RM08', when: '发起报告更正', to: 'RM09' },
+      { from: 'RM08', when: '发起报告撤回或作废', to: 'RM10' },
+      { from: 'RM09', when: '新版本重新履行审核与签发', to: 'RM03' },
+    ],
+  },
+];
+
+const businessPageTitles = new Map(
+  businessDomains.flatMap((domain) => domain.pages).map((page) => [page.id, page.title]),
+);
+const businessPagesById = new Map(
+  businessDomains.flatMap((domain) => domain.pages).map((page) => [page.id, page]),
+);
+
+const businessPageFlowStepOverrides = {
+  CC08: 6,
+  CC09: 6,
+  SM03: 2,
+  TM06: 6,
+  TM09: 5,
+  TM10: 6,
+  'TM01-CREATE': 1,
+  RM09: 3,
+  RM10: 8,
+};
+
+const businessPagePrimaryFlow = {
+  SM01: 'P02',
+  SM10: 'P02',
+  TM01: 'P03',
+  TM14: 'P03',
+  RM01: 'P04',
+  RM07: 'P04',
+};
+
+function flowContextForPage(flowIds, pageId, primaryNext, returnTarget) {
+  const candidates = flowIds
+    .map((flowId) => businessFlowCatalog.find((candidate) => candidate.id === flowId))
+    .filter(Boolean);
+  const flow = candidates.find((candidate) => candidate.id === businessPagePrimaryFlow[pageId])
+    ?? candidates.find((candidate) => candidate.primaryPath.includes(pageId))
+    ?? candidates.find((candidate) => candidate.id.startsWith('P'))
+    ?? businessFlowCatalog.find((candidate) => candidate.id === flowIds[0]);
+  const steps = flow.primaryPath.map((stepPageId) => businessPageTitles.get(stepPageId) ?? stepPageId);
+  const index = flow.primaryPath.indexOf(pageId);
+  const fallbackTarget = flow.primaryPath.indexOf(primaryNext ?? returnTarget);
+  const currentStep = businessPageFlowStepOverrides[pageId]
+    ?? (index >= 0 ? index + 1 : Math.max(1, fallbackTarget + 1));
+  return {
+    flowId: flow.id,
+    flowTitle: flow.title,
+    responsibleRoles: flow.responsibleRoles ?? '待确认',
+    currentStep,
+    stepCount: steps.length,
+    steps,
+    terminal: flow.terminal ?? flow.primaryPath.at(-1),
+    handoffs: flow.handoffs ?? [],
+  };
+}
+
+function flowMeta(flowIds, flowNode, primaryNext, returnTarget, alternatePaths, allowedActions) {
+  const blockedPaths = alternatePaths.filter(({ when }) => /异常|不满足|未通过|失败|缺失|冲突|拒收|不能|失控|暂停/.test(when));
+  const returnPaths = alternatePaths.filter(({ when }) => /退回|补充|调整|重新|修改|作废/.test(when));
+  return {
+    flowIds,
+    flowNode,
+    primaryNext,
+    returnTarget,
+    alternatePaths,
+    allowedActions,
+    blockedPaths,
+    returnPaths,
+  };
+}
+
+const businessPageFlowMetadata = {
+  WB01: flowMeta(['WB'], '身份验证', 'WB02', 'WB01', [{ when: '登录失败或账号锁定', target: 'WB01' }], ['登录', '申请解锁']),
+  WB02: flowMeta(['WB'], '业务总览与分流', 'WB03', 'WB02', [{ when: '查看客户与委托指标', target: 'CC03' }, { when: '查看样品指标', target: 'SM04' }, { when: '查看检测任务指标', target: 'TM01' }, { when: '查看报告指标', target: 'RM01' }], ['刷新指标', '下钻业务', '查看待办']),
+  WB03: flowMeta(['WB'], '待办队列', 'WB04', 'WB02', [{ when: '查看预警或消息', target: 'WB05' }], ['筛选待办', '打开处理页', '催办']),
+  WB04: flowMeta(['WB'], '待办决策', 'WB02', 'WB03', [{ when: '退回、转交或要求补充', target: 'WB03' }], ['通过', '退回', '转交', '补充']),
+  WB05: flowMeta(['WB'], '通知与预警处理', 'WB04', 'WB02', [{ when: '仅查看消息', target: 'WB02' }], ['查看关联业务', '标记已读', '归档消息']),
+  WB06: flowMeta(['WB'], '跨模块检索', null, 'WB02', [{ when: '打开委托结果', target: 'CC05' }, { when: '打开样品结果', target: 'SM05' }, { when: '打开任务结果', target: 'TM03' }, { when: '打开报告结果', target: 'RM08' }], ['搜索', '筛选', '打开详情']),
+  WB07: flowMeta(['WB'], '个人能力与偏好', 'WB02', 'WB02', [], ['查看授权', '维护偏好', '保存']),
+  M01: flowMeta(['WB'], '移动工作台分流', 'M02', 'M01', [{ when: '扫码处理样品', target: 'M03' }, { when: '执行现场任务', target: 'M04' }, { when: '审批报告', target: 'M05' }], ['刷新', '打开待办', '扫码']),
+  M02: flowMeta(['WB'], '移动待办审批', 'M01', 'M01', [{ when: '退回或转交', target: 'M01' }], ['通过', '退回', '转交']),
+
+  CC01: flowMeta(['P01'], '客户筛选与建档入口', 'CC02', 'WB02', [{ when: '为客户新建委托', target: 'CC04' }], ['筛选客户', '新增客户', '查看档案']),
+  CC02: flowMeta(['P01'], '客户档案维护', 'CC04', 'CC01', [{ when: '客户信息需补充', target: 'CC01' }], ['编辑档案', '上传资质', '新建委托']),
+  CC03: flowMeta(['P01', 'WB'], '委托队列', 'CC04', 'WB02', [{ when: '查看已有委托', target: 'CC05' }], ['筛选委托', '新建委托', '查看详情']),
+  CC04: flowMeta(['P01'], '委托登记与草稿', 'CC06', 'CC03', [{ when: '直接进入合同评审', target: 'CC07' }, { when: '保存草稿', target: 'CC03' }], ['保存草稿', '预览委托', '提交合同评审']),
+  CC05: flowMeta(['P01'], '委托受理与业务链路', 'SM01', 'CC03', [{ when: '发起报价或合同', target: 'CC06' }, { when: '发起合同评审', target: 'CC07' }, { when: '发起委托变更', target: 'CC08' }], ['查看链路', '发起变更', '进入样品接收']),
+  CC06: flowMeta(['P01'], '报价与客户确认', 'CC07', 'CC05', [{ when: '合同条款需要调整', target: 'CC04' }], ['保存报价', '提交审批', '登记客户确认']),
+  CC07: flowMeta(['P01'], '合同评审与受理决定', 'CC05', 'CC05', [{ when: '退回补充委托资料', target: 'CC04' }, { when: '报价或条款需调整', target: 'CC06' }], ['通过受理', '附条件受理', '退回补充']),
+  CC08: flowMeta(['P01'], '委托变更影响评审', 'CC05', 'CC05', [{ when: '需要重新合同评审', target: 'CC07' }], ['对比版本', '提交评审', '通知岗位']),
+  CC09: flowMeta(['P01'], '客户沟通与履约跟进', 'CC05', 'CC02', [{ when: '沟通导致委托变更', target: 'CC08' }], ['记录沟通', '分派跟进', '关闭事项']),
+
+  SM01: flowMeta(['P01', 'P02'], '待接收样品队列', 'SM02', 'CC05', [{ when: '核对委托要求', target: 'CC05' }], ['筛选待接收样品', '开始接收', '临时登记']),
+  SM02: flowMeta(['P02'], '样品接收与结论', 'SM04', 'SM01', [{ when: '接收异常需要确认', target: 'SM03' }], ['保存接收草稿', '确认接收', '发起异常']),
+  SM03: flowMeta(['P02'], '样品异常确认', 'SM02', 'SM02', [{ when: '拒收或补样', target: 'SM01' }], ['记录异常', '联系客户', '确认处置']),
+  SM04: flowMeta(['P02'], '样品台账与流转入口', 'SM05', 'SM01', [{ when: '打印或作废标签', target: 'SM06' }, { when: '发起样品交接', target: 'SM08' }], ['筛选样品', '查看详情', '发起流转']),
+  SM05: flowMeta(['P02'], '样品详情与追踪', 'SM07', 'SM04', [{ when: '办理交接', target: 'SM08' }, { when: '领用或归还', target: 'SM10' }, { when: '设置留样', target: 'SM11' }, { when: '发起处置', target: 'SM12' }], ['查看追踪', '打印标签', '发起流转']),
+  SM06: flowMeta(['P02'], '样品标签受控操作', 'SM07', 'SM04', [{ when: '标签作废后返回台账', target: 'SM04' }], ['预览标签', '打印', '补打', '作废']),
+  SM07: flowMeta(['P02'], '分样与子样建立', 'SM09', 'SM05', [{ when: '分样异常需要追踪', target: 'SM05' }], ['配置分样', '打印标签', '确认分样']),
+  SM08: flowMeta(['P02'], '样品交接确认', 'SM10', 'SM05', [{ when: '交接拒收或异常', target: 'SM05' }], ['扫描样品', '确认接收', '拒收并记录异常']),
+  SM09: flowMeta(['P02'], '存储与位置管理', 'SM08', 'SM05', [{ when: '需要重新分样', target: 'SM07' }], ['入库', '移动位置', '查看环境预警']),
+  SM10: flowMeta(['P02', 'P03'], '检测领用与归还', 'TM01', 'SM05', [{ when: '检测结束归还样品', target: 'SM09' }, { when: '转入留样', target: 'SM11' }], ['领用样品', '登记使用', '确认归还']),
+  SM11: flowMeta(['P02'], '留样与期限管理', 'SM12', 'SM05', [{ when: '申请留样延期', target: 'SM09' }], ['设置留样', '申请延期', '转入处置']),
+  SM12: flowMeta(['P02'], '样品处置与归档', null, 'SM04', [{ when: '处置条件未满足', target: 'SM11' }], ['申请处置', '执行处置', '上传证据']),
+  M03: flowMeta(['P02', 'WB'], '移动扫码接收与交接', 'SM02', 'M01', [{ when: '扫码发现异常', target: 'SM03' }, { when: '完成交接', target: 'SM08' }], ['扫码', '拍照', '确认接收或交接']),
+
+  TM01: flowMeta(['P01', 'P02', 'P03', 'WB'], '检测任务队列', 'TM02', 'WB02', [{ when: '查看任务执行详情', target: 'TM03' }], ['筛选任务', '新增', '排程', '查看详情']),
+  'TM01-CREATE': flowMeta(['P03'], '检测任务创建', 'TM02', 'TM01', [{ when: '保存草稿后返回任务列表', target: 'TM01' }, { when: '委托、样品或资源前置条件不满足', target: 'TM01-CREATE' }], ['保存草稿', '提交排程']),
+  TM02: flowMeta(['P03'], '任务排程与资源分配', 'TM03', 'TM01', [{ when: '资源冲突无法排程', target: 'TM01' }], ['分配人员', '分配设备', '发布排程']),
+  TM03: flowMeta(['P03'], '检测任务上下文与进度', 'TM04', 'TM01', [{ when: '发现检测偏离', target: 'TM09' }, { when: '查看原始记录', target: 'TM05' }], ['查看资源快照', '开工', '发起异常']),
+  TM04: flowMeta(['P03'], '任务领用与开工核验', 'TM05', 'TM03', [{ when: '资源核验不满足', target: 'TM08' }, { when: '样品未完成领用', target: 'SM10' }], ['核验授权', '领用样品', '确认开工']),
+  TM05: flowMeta(['P03'], '原始记录与自检', 'TM07', 'TM03', [{ when: '导入仪器数据', target: 'TM06' }, { when: '记录异常或暂停', target: 'TM09' }, { when: '申请复检或重测', target: 'TM10' }], ['保存草稿', '上传附件', '提交复核']),
+  TM06: flowMeta(['P03'], '仪器数据导入与对账', 'TM07', 'TM05', [{ when: '导入差异需要处理', target: 'TM05' }], ['上传文件', '映射样品', '确认导入']),
+  TM07: flowMeta(['P03'], '数据计算与结果生成', 'TM08', 'TM05', [{ when: '计算数据需要补充', target: 'TM05' }], ['选择模型', '计算', '生成结果']),
+  TM08: flowMeta(['P03'], '检测资源时点核验', 'TM11', 'TM03', [{ when: '资源不满足或发生异常', target: 'TM09' }], ['核验资源', '保存快照', '发起处置']),
+  TM09: flowMeta(['P03'], '检测异常与暂停处置', 'TM05', 'TM03', [{ when: '需复检或重测', target: 'TM10' }, { when: '无法恢复任务', target: 'TM14' }], ['暂停任务', '记录事实', '提交影响评价']),
+  TM10: flowMeta(['P03'], '复检与重测申请', 'TM02', 'TM03', [{ when: '申请退回补充', target: 'TM09' }], ['说明原因', '提交审批', '查看关联任务']),
+  TM11: flowMeta(['P03'], '检测结果汇总', 'TM13', 'TM03', [{ when: '结果缺失或冲突', target: 'TM05' }, { when: '直接提交技术复核', target: 'TM12' }], ['汇总结果', '处理冲突', '提交复核']),
+  TM12: flowMeta(['P03'], '结果技术复核', 'TM14', 'TM11', [{ when: '退回补充或重新计算', target: 'TM11' }], ['核对证据', '通过', '退回补充']),
+  TM13: flowMeta(['P03'], '质量控制结果放行', 'TM12', 'TM11', [{ when: '质控失控或需暂停', target: 'TM09' }], ['关联质控', '调查偏差', '放行结果']),
+  TM14: flowMeta(['P02', 'P03', 'P04'], '任务完成与归档交接', 'RM01', 'TM01', [{ when: '样品需要归还', target: 'SM10' }, { when: '任务关闭条件未满足', target: 'TM03' }], ['核对关闭条件', '完成任务', '进入报告编制']),
+  M04: flowMeta(['P03', 'WB'], '移动任务执行与同步', 'TM05', 'M01', [{ when: '现场发现异常', target: 'TM09' }], ['记录读数', '上传附件', '保存并同步']),
+
+  RM01: flowMeta(['P03', 'P04', 'WB'], '报告任务队列', 'RM02', 'WB02', [{ when: '处理待审核报告', target: 'RM04' }, { when: '处理待签发报告', target: 'RM05' }], ['筛选报告', '开始编制', '查看详情']),
+  RM02: flowMeta(['P04'], '报告编制与草稿', 'RM03', 'RM01', [{ when: '直接提交报告审核', target: 'RM04' }], ['保存草稿', '预览报告', '提交审核']),
+  RM03: flowMeta(['P04'], '报告预览与完整性检查', 'RM04', 'RM02', [{ when: '检查未通过需要修改', target: 'RM02' }], ['生成预览', '处理问题', '继续审核']),
+  RM04: flowMeta(['P04'], '报告内容审核', 'RM06', 'RM01', [{ when: '审核退回补充', target: 'RM02' }], ['核验报告', '通过审核', '退回补充']),
+  RM05: flowMeta(['P04'], '授权签发', 'RM07', 'RM01', [{ when: '签发退回补充', target: 'RM02' }], ['核验授权', '电子签名', '批准签发']),
+  RM06: flowMeta(['P04'], '认可标识与声明核验', 'RM05', 'RM04', [{ when: '核验问题需要修改报告', target: 'RM02' }], ['匹配能力范围', '生成声明', '保存核验结论']),
+  RM07: flowMeta(['P02', 'P04'], '报告发布与送达', 'RM08', 'RM01', [{ when: '送达失败需要重试', target: 'RM07' }, { when: '报告完成后安排留样', target: 'SM11' }], ['生成受控文件', '发送报告', '重试送达']),
+  RM08: flowMeta(['P04'], '报告详情与版本追踪', 'RM11', 'RM01', [{ when: '发起报告更正', target: 'RM09' }, { when: '发起撤回或作废', target: 'RM10' }], ['查看版本', '下载有效报告', '发起报告更正', '发起报告撤回']),
+  RM09: flowMeta(['P04'], '报告更正新版本', 'RM03', 'RM08', [{ when: '更正改为撤回处理', target: 'RM10' }], ['评估影响', '创建新版本', '重新提交审核']),
+  RM10: flowMeta(['P04'], '报告撤回与作废', 'RM08', 'RM08', [{ when: '需要发布替代报告', target: 'RM09' }], ['记录撤回原因', '通知收件人', '执行作废']),
+  RM11: flowMeta(['P04'], '报告归档与调阅', null, 'RM08', [], ['核验归档包', '执行归档', '受控调阅']),
+  M05: flowMeta(['P04', 'WB'], '移动报告审批签名', 'RM07', 'M01', [{ when: '退回报告补充', target: 'RM02' }], ['查看预览', '通过', '退回', '签名']),
+};
+
+for (const [pageId, metadata] of Object.entries(businessPageFlowMetadata)) {
+  const page = businessPagesById.get(pageId);
+  const flowContext = flowContextForPage(metadata.flowIds, pageId, metadata.primaryNext, metadata.returnTarget);
+  const returnPath = metadata.returnPaths[0] ?? (metadata.returnTarget ? { when: '返回上一处理节点', target: metadata.returnTarget } : null);
+  const blockedPath = metadata.blockedPaths[0] ?? returnPath ?? { when: '权限、前置条件或证据不满足', target: pageId };
+  metadata.primaryFlowId = flowContext.flowId;
+  metadata.flowContexts = metadata.flowIds.map((flowId) => {
+    const flow = businessFlowCatalog.find((candidate) => candidate.id === flowId);
+    const steps = flow.primaryPath.map((stepPageId) => businessPageTitles.get(stepPageId) ?? stepPageId);
+    const pathIndex = flow.primaryPath.indexOf(pageId);
+    const nodeIndex = pathIndex >= 0
+      ? pathIndex + 1
+      : (flowId === flowContext.flowId ? flowContext.currentStep : 1);
+    const normalNext = pathIndex >= 0 && pathIndex < flow.primaryPath.length - 1
+      ? flow.primaryPath[pathIndex + 1]
+      : metadata.primaryNext;
+    return {
+      flowId,
+      steps,
+      nodeIndex,
+      nodeState: flow.terminal === pageId ? 'terminal' : 'current',
+      normalNext,
+      returnTarget: returnPath?.target ?? pageId,
+      blockedTarget: blockedPath.target,
+    };
+  });
+  metadata.flowContext = {
+    ...flowContext,
+    responsibleRole: page?.role ?? flowContext.responsibleRoles,
+    nodePage: pageId,
+    nodeName: metadata.flowNode,
+  };
+  metadata.nodeContract = {
+    flowId: flowContext.flowId,
+    nodePage: pageId,
+    responsibleRole: page?.role ?? flowContext.responsibleRoles,
+    normal: metadata.primaryNext
+      ? { target: metadata.primaryNext, label: '提交下一节点' }
+      : { target: null, label: '终态只读；仅允许受控新版本或新申请' },
+    returned: returnPath,
+    blocked: blockedPath,
+    detailPage: ['detail', 'trace', 'resultSummary'].includes(page?.kind) ? pageId : metadata.returnTarget ?? pageId,
+    editPage: ['detail', 'trace', 'resultSummary', 'list', 'queue'].includes(page?.kind) ? metadata.primaryNext ?? pageId : pageId,
+    terminal: flowContext.terminal === pageId,
+  };
+}
+
+const businessActionPageTargets = {
+  'WB03|打开处理页': 'WB04',
+  'WB05|查看关联业务': 'WB04',
+  'M01|打开待办': 'M02',
+  'M01|扫码': 'M03',
+  'CC01|新增客户': 'CC02',
+  'CC01|查看档案': 'CC02',
+  'CC02|编辑档案': 'CC02',
+  'CC02|新建委托': 'CC04',
+  'CC03|新建委托': 'CC04',
+  'CC03|查看详情': 'CC05',
+  'CC04|提交合同评审': 'CC06',
+  'CC05|发起变更': 'CC08',
+  'CC05|进入样品接收': 'SM01',
+  'CC06|提交审批': 'CC07',
+  'CC08|提交评审': 'CC07',
+  'SM01|开始接收': 'SM02',
+  'SM02|发起异常': 'SM03',
+  'SM04|查看详情': 'SM05',
+  'SM04|发起流转': 'SM08',
+  'SM05|发起流转': 'SM08',
+  'SM11|转入处置': 'SM12',
+  'TM01|新增': 'TM01-CREATE',
+  'TM01|排程': 'TM02',
+  'TM01|查看详情': 'TM03',
+  'TM01-CREATE|提交排程': 'TM02',
+  'TM03|开工': 'TM04',
+  'TM03|发起异常': 'TM09',
+  'TM05|提交复核': 'TM07',
+  'TM08|发起处置': 'TM09',
+  'TM10|查看关联任务': 'TM03',
+  'TM11|提交复核': 'TM13',
+  'TM13|调查偏差': 'TM09',
+  'TM13|放行结果': 'TM12',
+  'TM14|进入报告编制': 'RM01',
+  'RM01|开始编制': 'RM02',
+  'RM01|查看详情': 'RM08',
+  'RM01|处理待审核报告': 'RM04',
+  'RM01|处理待签发报告': 'RM05',
+  'RM02|预览报告': 'RM03',
+  'RM02|提交审核': 'RM03',
+  'RM03|继续审核': 'RM04',
+  'RM04|通过审核': 'RM06',
+  'RM05|批准签发': 'RM07',
+  'RM06|保存核验结论': 'RM05',
+  'RM08|发起报告更正': 'RM09',
+  'RM08|发起报告撤回': 'RM10',
+  'RM09|重新提交审核': 'RM03',
+};
+
+const businessActionSurfaceOverrides = {
+  'WB06|打开详情': 'drawer',
+  'WB07|查看授权': 'drawer',
+  'CC04|预览委托': 'drawer',
+  'CC05|查看链路': 'drawer',
+  'CC06|登记客户确认': 'modal',
+  'CC07|通过受理': 'modal',
+  'CC07|附条件受理': 'modal',
+  'CC07|退回补充': 'modal',
+  'CC09|关闭事项': 'modal',
+  'SM01|临时登记': 'modal',
+  'SM02|确认接收': 'modal',
+  'SM03|确认处置': 'modal',
+  'SM05|查看追踪': 'drawer',
+  'SM06|预览标签': 'drawer',
+  'SM06|作废': 'modal',
+  'SM07|确认分样': 'modal',
+  'SM08|确认接收': 'modal',
+  'SM08|拒收并记录异常': 'modal',
+  'SM10|确认归还': 'modal',
+  'SM12|执行处置': 'modal',
+  'TM02|发布排程': 'modal',
+  'TM03|查看资源快照': 'drawer',
+  'TM04|确认开工': 'modal',
+  'TM06|确认导入': 'modal',
+  'TM07|生成结果': 'modal',
+  'TM09|暂停任务': 'modal',
+  'TM09|提交影响评价': 'modal',
+  'TM10|提交审批': 'modal',
+  'TM12|核对证据': 'drawer',
+  'TM12|通过': 'modal',
+  'TM12|退回补充': 'modal',
+  'TM14|核对关闭条件': 'drawer',
+  'TM14|完成任务': 'modal',
+  'RM02|预览报告': 'page',
+  'RM03|生成预览': 'drawer',
+  'RM04|核验报告': 'drawer',
+  'RM04|退回补充': 'modal',
+  'RM05|核验授权': 'drawer',
+  'RM05|电子签名': 'modal',
+  'RM06|匹配能力范围': 'drawer',
+  'RM07|生成受控文件': 'modal',
+  'RM07|发送报告': 'modal',
+  'RM08|查看版本': 'drawer',
+  'RM10|执行作废': 'modal',
+  'RM11|核验归档包': 'drawer',
+  'RM11|执行归档': 'modal',
+  'RM11|受控调阅': 'drawer',
+  'M02|通过': 'modal',
+  'M02|退回': 'modal',
+  'M02|转交': 'modal',
+  'M03|确认接收或交接': 'modal',
+  'M05|查看预览': 'drawer',
+  'M05|通过': 'modal',
+  'M05|退回': 'modal',
+  'M05|签名': 'modal',
+};
+
+const businessActionIdOverrides = {
+  'TM01|新增': 'TM01.create',
+  'TM01|查看详情': 'TM01.view',
+};
+
+function actionPlacement(label, surface) {
+  if (/新增|新建|开始编制/.test(label)) return 'header';
+  if (/查看|预览|下载|追踪/.test(label)) return 'row';
+  if (surface === 'modal' || /提交|通过|批准|签名|完成/.test(label)) return 'footer';
+  return 'toolbar';
+}
+
+function actionVisibility(page, label) {
+  if (/新增|新建|编辑|维护|保存|上传|记录|配置|分配/.test(label)) {
+    return `${page.role}具备创建或编辑权限，且业务对象未处于终态只读`;
+  }
+  if (/通过|批准|签名|审核|评审|放行|作废|归档|处置/.test(label)) {
+    return `${page.role}具备当前节点决策权限，且前置证据与职责分离校验通过`;
+  }
+  return `${page.role}具备页面访问权限，且当前业务状态允许执行“${label}”`;
+}
+
+function actionSurfaceFor(pageId, label, targetPageId) {
+  const override = businessActionSurfaceOverrides[`${pageId}|${label}`];
+  if (override) return override;
+  if (targetPageId) return 'page';
+  if (/查看|预览|核对|追踪/.test(label)) return 'drawer';
+  if (/确认|提交|通过|批准|签名|作废|关闭|执行|拒收/.test(label)) return 'modal';
+  return 'inline';
+}
+
+function createBusinessActionContract(page, label, actionIndex) {
+  const key = `${page.id}|${label}`;
+  const targetPageId = businessActionPageTargets[key];
+  const surface = actionSurfaceFor(page.id, label, targetPageId);
+  const actionId = businessActionIdOverrides[key] ?? `${page.id}.${label}`;
+  const base = {
+    actionId,
+    label,
+    placement: actionPlacement(label, surface),
+    surface,
+    returnTarget: page.id,
+    flowAnchorPageId: page.id,
+    visibleWhen: actionVisibility(page, label),
+  };
+  if (surface === 'page') return { ...base, targetPageId };
+  if (surface === 'drawer' || surface === 'modal') {
+    return { ...base, variantFrameId: `${page.id}-${String(actionIndex + 1).padStart(2, '0')}-${surface.toUpperCase()}` };
+  }
+  return { ...base, effect: `在当前页面执行“${label}”，更新局部状态并写入审计时间线` };
+}
+
+for (const [pageId, metadata] of Object.entries(businessPageFlowMetadata)) {
+  const page = businessPagesById.get(pageId);
+  page.actionContracts = metadata.allowedActions.map((label, actionIndex) => (
+    createBusinessActionContract(page, label, actionIndex)
+  ));
+}
+
+const INTERACTION_PROFILE_VERSION = 1;
+
+function createInteractionProfile(overrides = {}) {
+  return {
+    version: INTERACTION_PROFILE_VERSION,
+    source: 'spec',
+    edit: {
+      enabled: true,
+      mode: 'form',
+      title: '编辑业务信息',
+      fields: ['业务编号', '状态', '责任人', '说明'],
+      validation: ['必填项完整', '业务状态允许当前操作', '关联证据与资源可用'],
+      actions: ['保存草稿', '提交审核'],
+      ...(overrides.edit || {}),
+    },
+    detail: {
+      enabled: true,
+      mode: 'detail-drawer',
+      title: '业务详情',
+      sections: ['基本信息', '关联业务', '当前状态', '流程记录'],
+      entry: '查看详情',
+      ...(overrides.detail || {}),
+    },
+    modal: {
+      enabled: true,
+      variant: 'standard',
+      title: '确认提交当前变更',
+      action: '确认提交',
+      content: '提交后将进入受控流程，并保留操作原因与审计留痕。',
+      states: ['草稿', '待评审', '退回补充'],
+      ...(overrides.modal || {}),
+    },
+    blocker: {
+      enabled: true,
+      state: 'blocked',
+      reasons: ['当前账号无流程权限', '必填项或关键证据缺失', '关联资源状态不满足'],
+      action: '保存草稿或返回处理',
+      ...(overrides.blocker || {}),
+    },
+    success: {
+      enabled: true,
+      tone: 'success',
+      title: '操作成功',
+      message: '变更已保存并记录审计，流程已进入下一节点。',
+      nextState: '待评审',
+      ...(overrides.success || {}),
+    },
+    flow: {
+      enabled: true,
+      steps: ['编辑业务信息', '保存草稿', '提交评审', '处理下一节点'],
+      currentStep: 2,
+      pending: '等待下一节点',
+      ...(overrides.flow || {}),
+    },
+    audit: {
+      enabled: true,
+      events: ['打开页面 · 当前用户', '保存草稿 · 已记录', '提交变更 · 等待下一节点'],
+      actor: '当前用户',
+      ...(overrides.audit || {}),
+    },
+  };
+}
+
+const interactionProfiles = {
+  login: createInteractionProfile({
+    edit: {
+      mode: 'login',
+      title: '登录与身份验证',
+      fields: ['账号', '密码', '验证码', '记住账号'],
+      validation: ['账号和密码格式正确', '验证码校验通过', '账号未被锁定'],
+      actions: ['登录', '申请解锁'],
+    },
+    detail: {
+      enabled: true,
+      mode: 'status-panel',
+      title: '登录状态',
+      sections: ['身份验证结果', '账号状态', '安全提示'],
+      entry: '查看登录结果',
+    },
+    modal: {
+      variant: 'warning',
+      title: '登录失败或账号被锁定',
+      action: '申请解锁',
+      content: '请按提示修正凭据或提交解锁申请；页面不展示账号是否存在。',
+      states: ['待验证', '登录失败', '已锁定'],
+    },
+    blocker: {
+      reasons: ['账号或密码校验失败', '验证码错误或已过期', '连续失败达到锁定条件'],
+      action: '修正凭据或申请解锁',
+    },
+    success: {
+      title: '登录成功',
+      message: '身份验证完成，正在进入授权范围内的综合工作台。',
+      nextState: '已登录',
+    },
+    flow: {
+      steps: ['输入账号和密码', '完成验证码校验', '提交登录请求', '核验账号状态', '进入综合工作台'],
+      currentStep: 4,
+      pending: '登录成功后进入综合工作台',
+    },
+    audit: {
+      events: ['提交登录 · 已记录', '身份验证 · 成功或失败', '账号状态变更 · 已记录'],
+      actor: '当前用户',
+    },
+  }),
+  dashboard: createInteractionProfile({
+    edit: {
+      enabled: false,
+      mode: 'filter-and-drilldown',
+      title: '指标筛选与下钻',
+      fields: ['统计场所', '时间范围', '待办数量', '风险预警'],
+      validation: ['数据范围符合当前账号权限', '统计口径已展示', '更新时间可追溯'],
+      actions: ['刷新数据', '查看业务明细'],
+    },
+    detail: {
+      mode: 'metric-drawer',
+      title: '指标明细抽屉',
+      sections: ['指标口径', '当前数值', '业务明细', '更新时间'],
+      entry: '点击指标下钻',
+    },
+    modal: {
+      enabled: false,
+      title: '刷新工作台指标',
+      action: '刷新数据',
+      content: '刷新后显示授权范围内的最新业务、质量和资源数据。',
+    },
+    blocker: {
+      reasons: ['当前账号无对应数据范围', '指标服务暂时不可用', '所选统计范围无数据'],
+      action: '调整范围或返回工作台',
+    },
+    success: {
+      title: '指标已更新',
+      message: '工作台数据已刷新，待办与风险预警保持最新状态。',
+      nextState: '可继续下钻',
+    },
+    flow: {
+      steps: ['选择统计场所和时间范围', '查看业务质量资源指标', '核对逾期任务与风险预警', '下钻业务明细', '返回并确认指标更新'],
+      currentStep: 2,
+      pending: '等待选择指标或刷新数据',
+    },
+    audit: {
+      events: ['打开工作台 · 已记录', '查看指标明细 · 已记录', '下钻业务列表 · 已记录'],
+      actor: '当前用户',
+    },
+  }),
+  list: createInteractionProfile({
+    edit: {
+      mode: 'drawer',
+      title: '新增或编辑业务记录',
+      fields: ['业务编号', '业务名称', '责任人', '状态'],
+      validation: ['唯一编号有效', '必填业务信息完整', '当前状态允许保存'],
+      actions: ['保存草稿', '提交审核'],
+    },
+    detail: {
+      title: '列表记录详情',
+      sections: ['基本信息', '状态摘要', '关联业务', '操作记录'],
+      entry: '点击记录编号打开详情抽屉',
+    },
+    modal: {
+      title: '确认保存当前记录',
+      action: '确认保存',
+      content: '记录将保存为草稿；提交审核后状态变为待评审。',
+      states: ['草稿', '待评审', '退回补充'],
+    },
+    success: {
+      title: '记录已保存',
+      message: '记录已保存为草稿，可继续编辑或提交评审。',
+      nextState: '草稿',
+    },
+    flow: {
+      steps: ['筛选业务记录', '打开详情抽屉', '新增或编辑记录', '保存草稿或提交评审', '返回列表确认状态'],
+      currentStep: 3,
+      pending: '草稿可继续编辑，提交后等待评审',
+    },
+    audit: {
+      events: ['打开列表 · 已记录', '查看详情 · 已记录', '保存草稿 · 已记录', '提交评审 · 已记录'],
+      actor: '当前用户',
+    },
+  }),
+  detail: createInteractionProfile({
+    edit: {
+      mode: 'detail-edit',
+      title: '编辑详情信息',
+      fields: ['基本信息', '业务要求', '责任人', '状态'],
+      actions: ['保存草稿', '提交变更'],
+    },
+    detail: {
+      mode: 'detail-drawer',
+      title: '业务详情与关联链路',
+      sections: ['基本信息', '业务要求', '关联样品或任务', '流程轨迹', '审计记录'],
+      entry: '从列表、搜索或关联业务链路进入',
+    },
+    modal: {
+      title: '确认保存详情变更',
+      action: '确认保存',
+      content: '详情变更将形成新记录，并保留前后值、操作者和时间。',
+    },
+    success: {
+      title: '详情已更新',
+      message: '详情变更已保存，关联业务链路将显示最新状态。',
+      nextState: '待评审',
+    },
+    flow: {
+      steps: ['查看业务详情', '核对关联链路', '编辑允许变更的信息', '保存并提交变更', '查看流程记录'],
+      currentStep: 2,
+      pending: '等待变更评审或下一节点处理',
+    },
+  }),
+  approval: createInteractionProfile({
+    edit: {
+      mode: 'approval',
+      title: '审批核验与处理意见',
+      fields: ['核验清单', '历史意见', '处理动作', '处理意见'],
+      validation: ['职责分离校验通过', '核验清单已完成', '处理意见和依据完整'],
+      actions: ['保存补充意见', '提交审批结论'],
+    },
+    detail: {
+      mode: 'approval-drawer',
+      title: '审批业务详情',
+      sections: ['业务摘要', '核验清单', '流程轨迹', '历史意见', '版本信息'],
+      entry: '从待办或审批列表进入',
+    },
+    modal: {
+      variant: 'warning',
+      title: '确认提交审批结论',
+      action: '提交审批',
+      content: '请确认处理动作、意见和当前业务版本；提交后进入下一流程节点。',
+      states: ['待评审', '通过', '退回补充'],
+    },
+    blocker: {
+      reasons: ['当前用户不是有效处理人', '核验清单未完成', '业务版本已发生变化'],
+      action: '补充核验或转交有效处理人',
+    },
+    success: {
+      title: '审批已提交',
+      message: '审批结论已记录，业务状态已进入下一流程节点。',
+      nextState: '待下一节点处理',
+    },
+    flow: {
+      steps: ['确认流程角色', '核验业务与证据', '填写处理意见', '选择通过或退回补充', '身份确认并提交'],
+      currentStep: 3,
+      pending: '等待下一节点处理',
+    },
+    audit: {
+      events: ['打开待办 · 已记录', '完成核验清单 · 已记录', '提交审批结论 · 已记录'],
+      actor: '当前处理人',
+    },
+  }),
+  exception: createInteractionProfile({
+    edit: {
+      mode: 'exception',
+      title: '异常事实与影响处置',
+      fields: ['异常类型', '事实描述', '影响范围', '临时措施'],
+      validation: ['客观事实已记录', '影响对象已关联', '证据和授权意见完整'],
+      actions: ['保存草稿', '提交异常处置'],
+    },
+    detail: {
+      mode: 'exception-drawer',
+      title: '异常详情与影响链路',
+      sections: ['异常事实', '受影响对象', '临时措施', '影响评价', '恢复条件'],
+      entry: '从异常列表或关联业务进入',
+    },
+    modal: {
+      variant: 'warning',
+      title: '确认提交异常处置',
+      action: '确认处置',
+      content: '提交后异常进入受控处理；隔离、暂停或恢复动作将记录原因和责任人。',
+      states: ['待确认', '隔离', '暂停', '待恢复'],
+    },
+    blocker: {
+      reasons: ['影响评价尚未完成', '隔离或暂停措施缺少证据', '恢复条件未满足'],
+      action: '补充证据或保持隔离/暂停',
+    },
+    success: {
+      title: '异常处置已提交',
+      message: '异常事实、影响评价和处置动作已留痕，相关对象保持受控状态。',
+      nextState: '隔离或暂停',
+    },
+    flow: {
+      steps: ['记录异常事实', '关联受影响对象', '执行隔离或暂停', '完成影响评价', '提交恢复或后续处置'],
+      currentStep: 3,
+      pending: '等待技术负责人确认影响和恢复条件',
+    },
+    audit: {
+      events: ['记录异常 · 已记录', '执行隔离或暂停 · 已记录', '提交影响评价 · 等待确认'],
+      actor: '异常责任人',
+    },
+  }),
+  lifecycle: createInteractionProfile({
+    edit: {
+      mode: 'version',
+      title: '创建受控版本变更',
+      fields: ['原版本', '变更原因', '影响范围', '新版本内容'],
+      validation: ['原版本已锁定', '变更原因和影响范围完整', '新版本不可覆盖原记录'],
+      actions: ['保存草稿', '提交更正或撤回'],
+    },
+    detail: {
+      mode: 'version-drawer',
+      title: '版本详情与关系',
+      sections: ['当前有效版本', '历史版本', '变更原因', '审批记录', '发布或通知记录'],
+      entry: '从详情、列表或质量事件进入',
+    },
+    modal: {
+      variant: 'warning',
+      title: '确认创建受控新版本',
+      action: '确认版本变更',
+      content: '原版本不会被覆盖；更正、撤回和发布关系将保留审批、通知及审计记录。',
+      states: ['草稿', '待评审', '更正', '撤回', '发布失败'],
+    },
+    blocker: {
+      reasons: ['原版本正在审批或已锁定', '更正原因或影响范围缺失', '替代版本或通知对象未确认'],
+      action: '补充变更信息或返回版本详情',
+    },
+    success: {
+      title: '版本变更已提交',
+      message: '新版本已建立并进入受控流程，原版本关系和审计记录已保留。',
+      nextState: '待评审',
+    },
+    flow: {
+      steps: ['选择原版本', '记录更正或撤回原因', '评估影响并创建新版本', '重新审核与签发', '发布并通知相关对象'],
+      currentStep: 2,
+      pending: '等待版本审核、签发或发布处理',
+    },
+    audit: {
+      events: ['查看版本关系 · 已记录', '创建新版本 · 已记录', '更正/撤回提交 · 等待审批', '发布失败或通知结果 · 已记录'],
+      actor: '当前业务责任人',
+    },
+  }),
+  mobile: createInteractionProfile({
+    edit: {
+      mode: 'mobile',
+      title: '移动端现场记录',
+      fields: ['业务摘要', '关键结果', '附件', '同步状态'],
+      validation: ['本人授权有效', '关键字段完整', '离线记录可安全同步'],
+      actions: ['保存现场草稿', '提交并同步'],
+    },
+    detail: {
+      mode: 'mobile-drawer',
+      title: '移动业务摘要',
+      sections: ['业务摘要', '关键步骤', '风险提示', '同步记录'],
+      entry: '从移动工作台卡片或扫码结果进入',
+    },
+    modal: {
+      variant: 'warning',
+      title: '确认提交移动记录',
+      action: '提交并同步',
+      content: '提交前请核对关键结果、附件和当前业务版本；网络恢复后将同步到桌面流程。',
+      states: ['草稿', '待同步', '已提交', '同步冲突'],
+    },
+    blocker: {
+      reasons: ['当前设备无有效授权', '关键字段或附件缺失', '离线记录与桌面版本发生冲突'],
+      action: '保存本地草稿或转人工处理',
+    },
+    success: {
+      title: '移动记录已提交',
+      message: '现场记录已保存；网络可用时将同步并更新桌面业务状态。',
+      nextState: '待同步或已提交',
+    },
+    flow: {
+      steps: ['确认本人授权和对象身份', '查看受控步骤与风险提示', '录入关键结果和附件', '保存现场草稿', '同步并核对桌面状态'],
+      currentStep: 3,
+      pending: '等待网络同步或人工处理冲突',
+    },
+    audit: {
+      events: ['打开移动业务 · 已记录', '保存离线草稿 · 已记录', '提交同步 · 已记录', '同步冲突 · 转人工处理'],
+      actor: '当前移动用户',
+    },
+  }),
+};
+
+const representativeInteractionProfiles = {
+  WB02: createInteractionProfile({
+    ...interactionProfiles.dashboard,
+    detail: {
+      ...interactionProfiles.dashboard.detail,
+      title: '综合工作台指标详情',
+      sections: ['待办数量', '委托进度', '报告时效', '质量风险', '资源预警'],
+      entry: '点击指标卡片下钻',
+    },
+    success: {
+      ...interactionProfiles.dashboard.success,
+      message: '指标已按当前场所和时间范围更新，待办与预警可继续下钻。',
+    },
+    audit: {
+      ...interactionProfiles.dashboard.audit,
+      events: ['打开综合工作台 · 已记录', '刷新指标 · 已记录', '下钻业务明细 · 已记录'],
+    },
+  }),
+  CC01: createInteractionProfile({
+    ...interactionProfiles.list,
+    edit: {
+      ...interactionProfiles.list.edit,
+      title: '新增或编辑客户台账',
+      fields: ['客户名称', '客户类型', '联系人', '合作状态'],
+      validation: ['客户主体唯一', '联系人和联系方式完整', '保密等级与资质有效'],
+    },
+    detail: {
+      ...interactionProfiles.list.detail,
+      title: '客户档案详情抽屉',
+      sections: ['主体信息', '联系人', '资质与保密协议', '信用状态', '历史委托', '变更记录'],
+    },
+    modal: {
+      ...interactionProfiles.list.modal,
+      title: '确认保存客户档案',
+      content: '客户档案将保存为草稿；重复主体需先合并或关联既有档案。',
+    },
+    blocker: {
+      ...interactionProfiles.list.blocker,
+      reasons: ['客户主体已存在或无法唯一识别', '保密协议或资质文件缺失', '当前账号无客户档案编辑权限'],
+      action: '修正主体信息或保存草稿',
+    },
+    success: {
+      ...interactionProfiles.list.success,
+      title: '客户档案已保存',
+      message: '客户基础信息已记录，客户编号和合作状态可在台账中继续核对。',
+      nextState: '草稿',
+    },
+    flow: {
+      ...interactionProfiles.list.flow,
+      steps: ['筛选或新增客户', '核对主体和联系人', '维护资质与保密信息', '保存草稿或提交评审', '返回台账确认状态'],
+      pending: '等待客户档案评审或补充材料',
+    },
+    audit: {
+      ...interactionProfiles.list.audit,
+      events: ['打开客户台账 · 已记录', '查看客户详情 · 已记录', '保存客户草稿 · 已记录', '提交客户变更 · 已记录'],
+    },
+  }),
+  SM02: createInteractionProfile({
+    ...interactionProfiles.exception,
+    edit: {
+      ...interactionProfiles.exception.edit,
+      title: '样品接收与结论',
+      fields: ['委托编号', '样品数量', '包装状态', '接收结论'],
+      validation: ['委托已受理且接收要求可见', '数量和包装核对完成', '异常照片或运输证据已上传'],
+      actions: ['保存接收草稿', '确认接收'],
+    },
+    detail: {
+      ...interactionProfiles.exception.detail,
+      title: '样品接收详情抽屉',
+      sections: ['委托与样品信息', '接收条件', '数量和包装', '异常证据', '接收结论'],
+      entry: '从待接收列表或扫码结果进入',
+    },
+    modal: {
+      ...interactionProfiles.exception.modal,
+      title: '确认样品接收结论',
+      action: '确认接收',
+      content: '接收合格将生成样品编号并进入入库或分样；异常样品保持隔离并进入异常确认。',
+      states: ['草稿', '接收合格', '隔离', '异常待确认'],
+    },
+    blocker: {
+      ...interactionProfiles.exception.blocker,
+      reasons: ['委托未受理或接收要求缺失', '数量、包装或运输条件尚未核对', '异常证据和客户意见缺失'],
+      action: '保存接收草稿或转入样品异常确认',
+    },
+    success: {
+      ...interactionProfiles.exception.success,
+      title: '样品接收结论已保存',
+      message: '接收记录已留痕；合格样品进入入库/分样，异常样品保持隔离等待确认。',
+      nextState: '接收合格或隔离',
+    },
+    flow: {
+      ...interactionProfiles.exception.flow,
+      steps: ['扫描委托并加载要求', '清点样品和核对包装', '记录运输条件与证据', '判断接收合格或异常', '生成样品编号或保持隔离'],
+      pending: '等待样品接收确认或异常处置',
+    },
+    audit: {
+      ...interactionProfiles.exception.audit,
+      events: ['加载接收要求 · 已记录', '保存接收草稿 · 已记录', '确认接收结论 · 已记录', '生成样品编号或隔离 · 已记录'],
+      actor: '样品接收人',
+    },
+  }),
+  TM05: createInteractionProfile({
+    ...interactionProfiles.exception,
+    edit: {
+      ...interactionProfiles.exception.edit,
+      mode: 'record',
+      title: '原始记录编辑',
+      fields: ['原始读数', '单位', '计算公式', '附件'],
+      validation: ['记录模板和方法版本受控', '读数、单位和时间完整', '设备、环境和物料批次有效'],
+      actions: ['保存记录草稿', '提交技术复核'],
+    },
+    detail: {
+      ...interactionProfiles.exception.detail,
+      mode: 'record-drawer',
+      title: '原始记录与版本详情',
+      sections: ['任务与方法版本', '检测步骤', '原始读数', '设备环境物料', '附件与记录版本'],
+      entry: '从检测任务详情进入',
+    },
+    modal: {
+      ...interactionProfiles.exception.modal,
+      title: '确认提交原始记录复核',
+      action: '提交技术复核',
+      content: '提交后记录版本将进入技术复核；发现异常时可退回补充或申请重测。',
+      states: ['草稿', '待复核', '退回补充', '暂停', '重测'],
+    },
+    blocker: {
+      ...interactionProfiles.exception.blocker,
+      reasons: ['受控模板或方法版本不可用', '原始读数、单位或附件缺失', '设备、环境或物料状态不满足'],
+      action: '保存记录草稿或发起异常/重测申请',
+    },
+    success: {
+      ...interactionProfiles.exception.success,
+      title: '原始记录已提交',
+      message: '记录版本和原始证据已保存，任务状态进入待复核。',
+      nextState: '待复核',
+    },
+    flow: {
+      ...interactionProfiles.exception.flow,
+      steps: ['加载受控记录模板', '按步骤记录读数和观察', '关联设备环境和物料', '自检并保存草稿', '提交技术复核或发起重测'],
+      pending: '等待技术复核；异常时保持暂停或转重测',
+    },
+    audit: {
+      ...interactionProfiles.exception.audit,
+      events: ['加载记录模板 · 已记录', '保存原始记录草稿 · 已记录', '提交技术复核 · 已记录', '退回补充或重测申请 · 已记录'],
+      actor: '检测员',
+    },
+  }),
+  RM02: createInteractionProfile({
+    ...interactionProfiles.lifecycle,
+    edit: {
+      ...interactionProfiles.lifecycle.edit,
+      mode: 'report-editor',
+      title: '报告编制与预览',
+      fields: ['报告模板', '客户信息', '检测结果', '判定结论'],
+      validation: ['受控模板和结果版本有效', '客户、样品和方法信息一致', '完整性检查无阻断项'],
+      actions: ['保存报告草稿', '提交报告审核'],
+    },
+    detail: {
+      ...interactionProfiles.lifecycle.detail,
+      mode: 'report-drawer',
+      title: '报告详情与版本抽屉',
+      sections: ['报告基本信息', '结果快照', '完整性检查', '审核与签发记录', '报告版本'],
+      entry: '从报告任务列表进入',
+    },
+    modal: {
+      ...interactionProfiles.lifecycle.modal,
+      title: '确认提交报告审核',
+      action: '提交报告审核',
+      content: '提交后报告进入待评审；退回补充时保留意见，后续更正或撤回必须创建受控版本。',
+      states: ['草稿', '待评审', '退回补充', '更正', '撤回', '发布失败'],
+    },
+    blocker: {
+      ...interactionProfiles.lifecycle.blocker,
+      reasons: ['报告模板或结果版本无效', '完整性检查存在缺页、缺项或数据冲突', '当前账号无报告提交权限'],
+      action: '保存草稿并处理完整性问题',
+    },
+    success: {
+      ...interactionProfiles.lifecycle.success,
+      title: '报告已提交审核',
+      message: '报告草稿已形成受控版本，完整性检查通过后进入报告审核。',
+      nextState: '待评审',
+    },
+    flow: {
+      ...interactionProfiles.lifecycle.flow,
+      steps: ['选择受控报告模板', '引用委托客户样品和结果', '填写结论并检查完整性', '保存草稿或提交审核', '退回补充后重新提交'],
+      pending: '等待报告审核；发布失败时进入交付重试流程',
+    },
+    audit: {
+      ...interactionProfiles.lifecycle.audit,
+      events: ['打开报告编制 · 已记录', '保存报告草稿 · 已记录', '提交报告审核 · 已记录', '退回补充/更正/撤回 · 已记录'],
+      actor: '报告编制人员',
+    },
+  }),
+};
+
+function attachPageFlowContext(page, profile) {
+  const context = page.flowContext;
+  if (!context) return profile;
+  return {
+    ...profile,
+    flow: {
+      ...profile.flow,
+      flowId: context.flowId,
+      flowTitle: context.flowTitle,
+      nodePage: context.nodePage,
+      nodeName: context.nodeName,
+      responsibleRole: context.responsibleRole,
+      terminal: context.terminal,
+      handoffs: context.handoffs,
+      normalNext: page.nodeContract.normal,
+      returnPath: page.nodeContract.returned,
+      blockedPath: page.nodeContract.blocked,
+    },
+  };
+}
+
+function interactionProfileForPage(page) {
+  let profile;
+  if (representativeInteractionProfiles[page.id]) profile = representativeInteractionProfiles[page.id];
+  else if (page.kind === 'login') profile = interactionProfiles.login;
+  else if (['dashboard', 'mobileDashboard'].includes(page.kind)) profile = page.kind === 'mobileDashboard' ? interactionProfiles.mobile : interactionProfiles.dashboard;
+  else if (['approval', 'review', 'todoAction', 'mobileApproval'].includes(page.kind) || page.renderFamily === 'approval') {
+    profile = page.kind === 'mobileApproval' ? interactionProfiles.mobile : interactionProfiles.approval;
+  } else if (['exception'].includes(page.kind)) profile = interactionProfiles.exception;
+  else if (['version', 'versionDetail', 'correction', 'withdrawal', 'archive'].includes(page.kind) || page.renderFamily === 'lifecycle') profile = interactionProfiles.lifecycle;
+  else if (['detail', 'trace', 'resultSummary'].includes(page.kind)) profile = interactionProfiles.detail;
+  else if (['list', 'queue', 'messageCenter', 'search', 'profile'].includes(page.kind)) profile = interactionProfiles.list;
+  else if (['mobileScan', 'mobileTask'].includes(page.kind)) profile = interactionProfiles.mobile;
+  else {
+    profile = createInteractionProfile({
+      edit: {
+        mode: ['record', 'import', 'calculation', 'retest'].includes(page.kind) ? 'form' : 'workflow',
+        fields: (page.fields || []).slice(0, 4),
+      },
+      flow: {
+        steps: Array.isArray(page.flow) ? page.flow.slice(0, 5) : undefined,
+      },
+    });
+  }
+  return attachPageFlowContext(page, profile);
+}
+
+function validateBusinessFlowMetadata() {
+  const pageIds = new Set(businessDomains.flatMap((domain) => domain.pages.map((page) => page.id)));
+  const flowIds = new Set(businessFlowCatalog.map((flow) => flow.id));
+  const assertPageTarget = (target, source) => {
+    if (target && !pageIds.has(target)) throw new Error(`业务流程 ${source} 引用了不存在的页面 ${target}`);
+  };
+
+  for (const pageId of pageIds) {
+    const metadata = businessPageFlowMetadata[pageId];
+    if (!metadata) throw new Error(`业务页面 ${pageId} 缺少流程元数据`);
+    if (!metadata.flowIds.length || metadata.flowIds.some((flowId) => !flowIds.has(flowId))) {
+      throw new Error(`业务页面 ${pageId} 引用了不存在的流程`);
+    }
+    assertPageTarget(metadata.primaryNext, `${pageId}.primaryNext`);
+    assertPageTarget(metadata.returnTarget, `${pageId}.returnTarget`);
+    for (const path of metadata.alternatePaths) assertPageTarget(path.target, `${pageId}.alternatePaths`);
+  }
+
+  for (const flow of businessFlowCatalog) {
+    for (const pageId of flow.primaryPath) assertPageTarget(pageId, `${flow.id}.primaryPath`);
+    for (const branch of flow.branches) {
+      assertPageTarget(branch.from, `${flow.id}.branches`);
+      assertPageTarget(branch.to, `${flow.id}.branches`);
+    }
+    if (/^P0[1-4]$/.test(flow.id)) {
+      for (const field of ['responsibleRoles', 'entryPages', 'detailPages', 'editPages', 'approvalPages', 'terminal', 'handoffs']) {
+        if (!flow[field] || (Array.isArray(flow[field]) && !flow[field].length)) {
+          throw new Error(`业务流程 ${flow.id} 缺少 ${field}`);
+        }
+      }
+      assertPageTarget(flow.terminal, `${flow.id}.terminal`);
+    }
+  }
+
+  for (const [pageId, metadata] of Object.entries(businessPageFlowMetadata)) {
+    const context = metadata.flowContext;
+    const contract = metadata.nodeContract;
+    if (!context || !contract) throw new Error(`业务页面 ${pageId} 缺少节点契约`);
+    if (context.currentStep < 1 || context.currentStep > context.stepCount || context.steps.length !== context.stepCount) {
+      throw new Error(`业务页面 ${pageId} 步骤状态超出所属流程范围`);
+    }
+    for (const route of [contract.normal, contract.returned, contract.blocked]) {
+      assertPageTarget(route?.target, `${pageId}.nodeContract`);
+    }
+  }
+}
+
+function validateBusinessInteractionProfiles() {
+  const pageIds = new Set(businessDomains.flatMap((domain) => domain.pages.map((page) => page.id)));
+  const actionIds = new Set();
+  for (const page of businessDomains.flatMap((domain) => domain.pages)) {
+    const flow = page.interactionProfile?.flow;
+    if (!flow?.flowId || !flow.nodePage || !flow.normalNext || !flow.returnPath || !flow.blockedPath) {
+      throw new Error(`业务页面 ${page.id} 交互流程上下文不完整`);
+    }
+    if (flow.currentStep < 1 || flow.currentStep > flow.steps.length) {
+      throw new Error(`业务页面 ${page.id} 交互步骤状态无效`);
+    }
+    if (!page.primaryFlowId || !Array.isArray(page.flowContexts) || !page.flowContexts.length) {
+      throw new Error(`业务页面 ${page.id} 缺少统一多流程上下文`);
+    }
+    for (const context of page.flowContexts) {
+      if (!['completed', 'current', 'pending', 'returned', 'blocked', 'terminal'].includes(context.nodeState)) {
+        throw new Error(`业务页面 ${page.id} 的 ${context.flowId} 节点状态无效`);
+      }
+      if (context.nodeIndex < 1 || context.nodeIndex > context.steps.length) {
+        throw new Error(`业务页面 ${page.id} 的 ${context.flowId} 节点位置无效`);
+      }
+      for (const target of [context.normalNext, context.returnTarget, context.blockedTarget]) {
+        if (target && !pageIds.has(target)) throw new Error(`业务页面 ${page.id} 的 ${context.flowId} 路由目标不存在：${target}`);
+      }
+    }
+    const declaredLabels = new Set(page.allowedActions);
+    const contractLabels = new Set(page.actionContracts?.map((contract) => contract.label));
+    if (!page.actionContracts?.length || declaredLabels.size !== contractLabels.size || [...declaredLabels].some((label) => !contractLabels.has(label))) {
+      throw new Error(`业务页面 ${page.id} 的可见动作未完整声明 actionContracts`);
+    }
+    for (const contract of page.actionContracts) {
+      for (const field of ['actionId', 'label', 'placement', 'surface', 'returnTarget', 'flowAnchorPageId', 'visibleWhen']) {
+        if (!contract[field]) throw new Error(`业务页面 ${page.id} 的动作契约缺少 ${field}`);
+      }
+      if (actionIds.has(contract.actionId)) throw new Error(`业务动作 ID 重复：${contract.actionId}`);
+      actionIds.add(contract.actionId);
+      if (!['page', 'drawer', 'modal', 'inline'].includes(contract.surface)) {
+        throw new Error(`业务动作 ${contract.actionId} 的 surface 无效`);
+      }
+      if (!pageIds.has(contract.returnTarget) || !pageIds.has(contract.flowAnchorPageId)) {
+        throw new Error(`业务动作 ${contract.actionId} 的返回页或流程锚点不存在`);
+      }
+      if (contract.surface === 'page' && !pageIds.has(contract.targetPageId)) {
+        throw new Error(`业务动作 ${contract.actionId} 的目标页不存在`);
+      }
+      if (['drawer', 'modal'].includes(contract.surface) && !contract.variantFrameId) {
+        throw new Error(`业务动作 ${contract.actionId} 缺少状态画板 ID`);
+      }
+      if (contract.surface === 'inline' && !contract.effect) {
+        throw new Error(`业务动作 ${contract.actionId} 缺少页内效果说明`);
+      }
+    }
+    if (page.hidden) {
+      for (const field of ['sourcePageId', 'actionId', 'interactionProfile']) {
+        if (!page[field]) throw new Error(`隐藏业务操作页 ${page.id} 缺少 ${field}`);
+      }
+      if (page.pageType !== '操作页') throw new Error(`隐藏业务操作页 ${page.id} 必须使用操作页类型`);
+    }
+  }
+  const taskList = businessPagesById.get('TM01');
+  if (taskList.actionContracts.find((contract) => contract.actionId === 'TM01.create')?.targetPageId !== 'TM01-CREATE') {
+    throw new Error('TM01.create 必须进入 TM01-CREATE');
+  }
+  if (taskList.actionContracts.find((contract) => contract.actionId === 'TM01.view')?.targetPageId !== 'TM03') {
+    throw new Error('TM01.view 必须进入 TM03');
+  }
+}
+
+validateBusinessFlowMetadata();
+
+for (const domain of businessDomains) {
+  for (const page of domain.pages) {
+    Object.assign(page, businessPageFlowMetadata[page.id]);
+    page.interactionProfile = interactionProfileForPage(page);
+  }
+}
+
+validateBusinessInteractionProfiles();
