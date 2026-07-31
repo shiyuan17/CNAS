@@ -4,6 +4,8 @@
 .agents/memory/
 .agents/cognis/tools/
 .agents/cognis/tools/**/node_modules/
+.agents/runtime/
+.zcode/
 
 # Local Python and tooling caches
 __pycache__/
@@ -69,3 +71,6 @@ web/.codex/
 web/skills-lock.json
 web/.atomcode
 web/datalog/
+
+# Prototype dependencies and local browser tooling
+prototype/**/node_modules/
